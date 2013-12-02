@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>sample2</title>
+		<meta name="author" content="Felipe Correa" />
+		<!-- Date: 2013-04-27 -->
+	</head>
+	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="{{ url_for('static', filename='OpenLayers-2.12/lib/OpenLayers.js') }}"></script>
+	<script src="{{ url_for('static', filename='dojo/dojo.js') }}"></script>
+	<script type="text/javascript">
+		var map;
+		var wms;
+		var wktLayer;
+		var picturesLayer;
+		var picturesFeatures = [];
+		
+		var icon_path = "{{ url_for('static', filename='icons2') }}"
+		function init(){
+			map = new OpenLayers.Map( 'map' );
+
+			picturesLayer = new OpenLayers.Layer.Vector('Pictures');
+			
+			wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",       
+					"http://labs.metacarta.com/wms/vmap0", {
+					 layers: 'basic', 
+					 isBaseLayer: true
+			} );
+			map.addLayer(wms);
+			map.addLayer(picturesLayer);
+			map.addControl(new OpenLayers.Control.LayerSwitcher());
+			map.setCenter(new OpenLayers.LonLat(0,0),2);
+
+			$.getJSON('/api/pictures/', function(data){
+			var val = data['results'];
+				$.each(val, function (key, val){
+					var geo = val['geo'];
+					var lonlat = new OpenLayers.LonLat(geo.geometry.coordinates[0], geo.geometry.coordinates[1]);
+					var pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+					var pointFeature = new OpenLayers.Feature.Vector(pointGeometry, geo['properties'], {
+						pointRadius: 16,
+						fillOpacity: 0.7,
+						externalGraphic: icon_path + '/' + 'forest.png'
+					});
+					picturesFeatures.push(pointFeature);
+					// var geoFormat = new OpenLayers.Format.GeoJSON();
+					// var feature = geoFormat.read(geo);
+					// feature.style =  {
+					// 	pointRadius: 16,
+					// 	fillOpacity: 0.7,
+					// 	externalGraphic: icon_path + '/' + 'forest.png'
+					// };
+					// picturesFeatures.push(feature);
+					//picturesLayer.addFeature(feature);
+				});
+				picturesLayer.addFeatures(picturesFeatures);
+				picturesLayer.refresh();
+			});
+			var selectControl = new OpenLayers.Control.SelectFeature(picturesLayer,
+			  {
+			    hover: true,
+			    onSelect: function (feature){
+			      var layer = feature.layer;
+			      feature.style.fillOpacity = 1;
+			      feature.style.pointRadius = 20;
+			      layer.drawFeature(feature);
+
+			      // var content = "<div><strong>Feature:</strong><br/>" + feature.id + "<br/><br/><strong>Location:</strong><br/>" + feature.geometry + "</div>";
+			      //var content = '<div><img src="http://www.felipecorrea.com/images/"' + feature.image_path + 'style="width:256; height: 256">
+
+			      var content = "<img src=" + "\"http://www.felipecorrea.com/images/" + feature.attributes.image_path + "\"width=200px >" ;
+			      var popup = new OpenLayers.Popup.FramedCloud(
+			        feature.id + "_popup", 
+			        feature.geometry.getBounds().getCenterLonLat(),
+			        new OpenLayers.Size(250,100),
+			        content,
+			        null);
+			        feature.popup = popup;
+			        map.addPopup(popup);
+			    },
+			    onUnselect: function(feature){
+			      var layer = feature.layer;
+			      feature.style.fillOpacity = 0.7;
+			      feature.style.pointRadius = 16;
+			      layer.drawFeature(feature);
+			      map.removePopup(feature.popup);
+			    }
+			  })
+			  map.addControl(selectControl);
+			  selectControl.activate();
+			  }
+    </script>
+    <style type="text/css">
+      #map {
+          width: 800px;
+          height: 800px;
+          border: 1px solid black;
+      }
+  </style>
+	<body onload="init()">
+    <div id="map" class="olMap"/>
+  </body>
+</html>

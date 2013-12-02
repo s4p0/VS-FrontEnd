@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ForestWatchers.net</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">{% block base_style %}
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.mobile.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- <link href="{{ url_for('static', filename='galleriffic/css/basic.css') }}" rel="stylesheet" type="text/css"> -->
+    <link href="{{ url_for('static', filename='galleriffic/css/galleriffic-2.css') }}" rel="stylesheet" type="text/css">
+
+
+
+
+    <style type="text/css">
+    #map {
+        height: 316px;
+        /*max-height: 320px;*/
+    }
+    </style>
+
+    {% endblock %}
+</head>
+
+<body>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="map"></div>
+            <div id="thumbs-container" class="container" style="width: 212px; height: 700px; display: block; left: 25px; top: 100px; z-index: 10000; position: absolute; overflow: hidden;">
+                <div id="thumbs">
+                            <ul class="thumbs">
+                                <li>
+                                    <a class="thumb" name="empty" href="" title="Picture">
+                                        <img src="" alt="" />
+                                    </a>
+                                    <div class="caption">
+                                        <div class="download">
+                                            <a href="">Download Original</a>
+                                        </div>
+                                        <div class="image-title">Title #0</div>
+                                        <div class="image-desc">Description</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+        </div>
+    </div>
+    {% block base_js%}
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
+
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='galleriffic/js/jquery.galleriffic.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='galleriffic/js/jquery.history.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='galleriffic/js/jquery.opacityrollover.js') }}"></script>
+
+    <!-- // <script type="text/javascript" src="{{ url_for('static', filename='galleria/galleria-1.2.9.js') }}"></script> -->
+    <!-- script type="text/javascript" src="{{ url_for('static', filename='galleria/themes/classic/galleria.classic.min.js') }}"></script -->
+
+
+    {% endblock %}
+    <script type="text/javascript">
+    var lastPictures = '';
+    var map = '';
+    var photos = '';
+    var previousSelected = '';
+
+    $(document).ready(function() {
+        // mapHeight = $(document).height() - 110;
+        mapHeight = $(document).height();
+        $('#map').css('height', mapHeight);
+
+        // width = $(document).width();
+        // $('#thumbs-container').css('width', width);
+
+
+
+
+        // var gall;
+        /*
+	definitions for zindex
+	*/
+        var SHADOW_Z_INDEX = 10;
+        var MARKER_Z_INDEX = 11;
+
+        var icon_path = "{{ url_for('static', filename='icons') }}";
+        var uploads_path = "{{ url_for('static', filename='uploads') }}";
+        var sat_imagens = "{{ url_for('static', filename='sat_imagens') }}";
+        var galleria_dir = "{{ url_for('static', filename='galleria') }}";
+        var mapserv_url = 'http://' + location.hostname + "/cgi-bin/mapserv";
+
+
+        // var data = [{
+        //   image: uploads_path + "/3FF01F0CADE307D1CE459DE5FFFFFFFF_CameraCapture-b6b13e0a-f7f0-4c3c-bd7f-bbdd609c6909.jpg",
+        //   title: "test",
+        //   description: "desc"
+        // },{
+        //   big: uploads_path + "/3FF01F0CADE307D1CE459DE5FFFFFFFF_CameraCapture-bd7b2294-5dd8-4e43-b555-c754e3125871.jpg",
+        //   image: uploads_path + "/3FF01F0CADE307D1CE459DE5FFFFFFFF_CameraCapture-bd7b2294-5dd8-4e43-b555-c754e3125871.jpg",
+        //   title: "test",
+        //   description: "desc"
+        // }
+        // ];
+
+
+
+        /**
+         * A specific format for parsing Flickr API JSON responses.
+         */
+        OpenLayers.Format.VolunteerSensingPictures = OpenLayers.Class(OpenLayers.Format, {
+            read: function(obj) {
+
+                if (lastPictures) {
+                    for (var i = 0; i < lastPictures.length; i++) {
+                        gall.removeImageByHash('' + lastPictures[i].picture.id);
+                    };
+                }
+
+                gall.removeImageByHash('empty');
+                gj = JSON.parse(obj);
+                var feature, features = [];
+                var sorted = gj.result;
+                sorted.sort(function(a, b) {
+                    if (a.picture.id > b.picture.id)
+                        return 1;
+                    if (a.picture.id < b.picture.id)
+                        return -1;
+                    // a must be equal to b
+                    return 0;
+                });
+                lastPictures = sorted;
+
+                for (var i = 0; i < sorted.length; i++) {;
+                    pic = sorted[i];
+
+                    geo = pic.picture.geom;
+                    // lonlat = new OpenLayers.LonLat(geo.coordinates[1], geo.coordinates[0]);
+                    lonlat = new OpenLayers.LonLat(geo.coordinates[0], geo.coordinates[1]);
+                    pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+
+                    pic.visible = '';
+                    pic.focus = 'unselected';
+                    feature = new OpenLayers.Feature.Vector(pointGeometry, pic);
+                    features.push(feature);
+
+
+                    // gallery
+
+                    thumb75 = uploads_path + '/thumb_75/' + pic.picture.fileName;
+                    thumb120 = uploads_path + '/thumb_120/' + pic.picture.fileName;
+                    thumb400 = uploads_path + '/thumb_400/' + pic.picture.fileName;
+                    picture = uploads_path + '/' + pic.picture.fileName;
+
+                    gall.addImage('<li><a class="thumb" data-feature-id="' + feature.id + '" name="' + pic.picture.id + '" href="' + thumb400 + '" title="Picture' + pic.picture.id + '"><img src="' + thumb75 + '" alt="" /></a><div class="caption"><div class="download"><a href="' + picture + '">Download Original</a></div><div class="image-title">Title #0</div><div class="image-desc">Description</div></div></li>');
+
+                };
+                // var onMouseOutOpacity = 0.67;
+                // $('#thumbs ul.thumbs li').opacityrollover({
+                //     mouseOutOpacity: onMouseOutOpacity,
+                //     mouseOverOpacity: 1.0,
+                //     fadeSpeed: 'fast',
+                //     exemptionSelector: '.selected'
+                // });
+
+                $('#thumbs ul.thumbs li').click(function(e) {
+                    if (previousSelected) {
+                        previousSelected.attributes.focus = 'unselected';
+                        // photos.drawFeature(previousSelected);
+                        previousSelected = '';
+                    }
+
+                    featId = $(e.target).parent().data('feature-id');
+                    currentFeature = photos.getFeatureById(featId);
+                    currentFeature.attributes.focus = 'selected';
+                    previousSelected = currentFeature;
+                    // photos.drawFeature(currentFeature);
+                });
+
+                $('#thumbs ul.thumbs li').hover(
+                    function(e) {
+                        try {
+                            featId = $(e.target).data('feature-id');
+                            currentFeature = photos.getFeatureById($(e.target).data('feature-id'));
+                            for (var i = 0; i < photos.features.length; i++) {
+                                otherFeature = photos.features[i];
+                                if (otherFeature.id != currentFeature.id) {
+                                    otherFeature.attributes.visible = 'none';
+                                    // photos.drawFeature(otherFeature);
+                                }
+                                //photos.getFeatureById( $(e.target).data('feature-id') ).attributes.visible = 'none'
+                            }
+                            photos.redraw();
+                        } catch (err) {
+                            console.log('hover in');
+                            console.log(err);
+                        }
+
+                    },
+                    function(e) {
+
+                        try {
+                            for (var i = 0; i < photos.features.length; i++) {
+                                otherFeature = photos.features[i];
+                                otherFeature.attributes.visible = '';
+                                // photos.drawFeature(otherFeature);
+                            };
+                            photos.redraw();
+                        } catch (err) {
+                            console.log('hover out');
+                            console.log(err);
+                        }
+
+                    });
+
+
+                return features;
+            }
+        });
+
+
+
+        var modisBaseLayer = new OpenLayers.Layer.MapServer("Modis (250m) - 2013-08-04",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "2013216",
+                // transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            });
+
+        var estados = new OpenLayers.Layer.WMS("Estados",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "estados",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            });
+
+        var annClassfied = new OpenLayers.Layer.WMS("ANN Classification",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "ANNClassified",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 1.0
+            });
+
+        // ANNProbability
+        var annProbability = new OpenLayers.Layer.WMS("ANN Probability",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "ANNProbability",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 1.0
+            });
+
+        var hidro = new OpenLayers.Layer.WMS("Hidrográfia",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "hidro_prodes",
+                transparent: "true",
+                opacity: 0.5,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5
+            });
+
+
+        var uc = new OpenLayers.Layer.WMS("Unidade de Conservação",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "unidadeconservacao",
+                transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5
+            });
+
+        var terras = new OpenLayers.Layer.WMS("Terra Indigena",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "terraindigena",
+                transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5
+            });
+
+        var otherBaseLayer = new OpenLayers.Layer.MapServer('??? (2.5M) 2009-2011',
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: ['2009_2.5', '2011_2.5'],
+                transparent: "false",
+                format: "image/png",
+                srs: "EPSG:4326"
+            })
+
+
+        var gall = $('#thumbs').galleriffic({
+            delay: 1000, // in milliseconds
+            numThumbs: 14, // The number of thumbnails to show page
+            preloadAhead: 5, // Set to -1 to preload all images
+            enableTopPager: false,
+            enableBottomPager: true,
+            maxPagesToShow: 15, // The maximum number of pages to display in either the top or bottom pager
+            imageContainerSel: '#slideshow', // The CSS selector for the element within which the main slideshow image should be rendered
+            controlsContainerSel: '#controls', // The CSS selector for the element within which the slideshow controls should be rendered
+            captionContainerSel: '#captions', // The CSS selector for the element within which the captions should be rendered
+            loadingContainerSel: '#loading', // The CSS selector for the element within which should be shown when an image is loading
+            renderSSControls: false, // Specifies whether the slideshow's Play and Pause links should be rendered
+            renderNavControls: false, // Specifies whether the slideshow's Next and Previous links should be rendered
+            playLinkText: 'Play',
+            pauseLinkText: 'Pause',
+            prevLinkText: 'Previous',
+            nextLinkText: 'Next',
+            nextPageLinkText: 'Next &rsaquo;',
+            prevPageLinkText: '&lsaquo; Prev',
+            enableHistory: false, // Specifies whether the url's hash and the browser's history cache should update when the current slideshow image changes
+            enableKeyboardNavigation: true, // Specifies whether keyboard navigation is enabled
+            autoStart: false, // Specifies whether the slideshow should be playing or paused when the page first loads
+            syncTransitions: false, // Specifies whether the out and in transitions occur simultaneously or distinctly
+            defaultTransitionDuration: 500, // If using the default transitions, specifies the duration of the transitions
+            onSlideChange: undefined, // accepts a delegate like such: function(prevIndex, nextIndex) { ... }
+            onTransitionOut: undefined, // accepts a delegate like such: function(slide, caption, isSync, callback) { ... }
+            onTransitionIn: undefined, // accepts a delegate like such: function(slide, caption, isSync) { ... }
+            onPageTransitionOut: undefined, // accepts a delegate like such: function(callback) { ... }
+            onPageTransitionIn: undefined, // accepts a delegate like such: function() { ... }
+            onImageAdded: undefined, // accepts a delegate like such: function(imageData, $li) { ... }
+            onImageRemoved: undefined // accepts a delegate like such: function(imageData, $li) { ... }
+        });
+
+        $('div.navigation').css({
+            'width': '300px',
+            'float': 'left'
+        });
+        $('div.content').css('display', 'block');
+
+        map = new OpenLayers.Map('map');
+        map.maxZoom = 20;
+        map.numZoomLevels = 26;
+
+        map.addLayer(modisBaseLayer);
+        map.addLayer(otherBaseLayer);
+        // map.addLayer(picturesLayer);
+        map.addLayer(hidro);
+        map.addLayer(uc);
+        map.addLayer(terras);
+        map.addLayer(estados);
+        map.addLayer(annClassfied);
+        map.addLayer(annProbability);
+
+        map.addControl(new OpenLayers.Control.LayerSwitcher());
+        map.addControl(new OpenLayers.Control.MousePosition());
+
+        map.setCenter(new OpenLayers.LonLat(-54.89, -3), 12);
+
+        var lookupPointRadius = {
+            'selected': {
+                pointRadius: 24
+            },
+            'unselected': {
+                pointRadius: 12
+            }
+        }
+
+        var styleMap = new OpenLayers.StyleMap({
+            externalGraphic: icon_path + '/' + 'blue_photo_a.png',
+            backgroundGraphic: icon_path + '/' + 'shadow.png',
+            graphicZIndex: MARKER_Z_INDEX,
+            backgroundGraphicZIndex: SHADOW_Z_INDEX,
+            backgroundXOffset: -0,
+            backgroundYOffset: -8,
+            title: "${orientation}",
+            display: "${visible}"
+        });
+        styleMap.addUniqueValueRules('default', 'focus', lookupPointRadius);
+
+        photos = new OpenLayers.Layer.Vector("Photos", {
+            projection: "EPSG:4326",
+            strategies: [new OpenLayers.Strategy.BBOX({
+                resFactor: 3,
+                ratio: 1
+            })],
+            protocol: new OpenLayers.Protocol.HTTP({
+                url: "/api/pictures",
+                params: {
+                    // api_key: 'b5e8c0e287e678671c3d8b2c0f3ced85',
+                    // format: 'json',
+                    // method: 'flickr.photos.search',
+                    // extras: 'geo,url_s',
+                    // per_page: 10,
+                    // page: 1
+                },
+                callbackKey: 'jsoncallback',
+                format: new OpenLayers.Format.VolunteerSensingPictures()
+            }),
+            styleMap: styleMap
+             //, renderers: ["Canvas", "SVG", "VML"]
+        });
+
+        map.addLayer(photos);
+
+    });
+    </script>
+</body>
+
+</html>

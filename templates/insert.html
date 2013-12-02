@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block customcss %}
+	<!-- link rel="stylesheet" href="{{ url_for('static', filename='blueimp/css/blueimp-gallery.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='blueimp/css/blueimp-gallery-indicator.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='blueimp/css/blueimp-gallery-video.css') }}" -->
+
+  <!-- image-gallery -->
+  <!-- link rel="stylesheet" href="{{ url_for('static', filename='gallery/css/style.css') }}" -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='gallery/css/bootstrap-image-gallery.css') }}">
+
+  <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+  <link href="{{ url_for('static', filename='OpenLayers/theme/default/google.css') }}" rel="stylesheet" type="text/css">
+  <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.mobile.css') }}" rel="stylesheet" type="text/css">
+	
+  <!-- Add fancyBox -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/jquery.fancybox.css')}}" type="text/css" media="screen" />
+  
+
+<!-- Optionally add helpers - button, thumbnail and/or media -->
+<link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-buttons.css')}}" type="text/css" media="screen" />
+
+<link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-thumbs.css')}}" type="text/css" media="screen" />
+{% endblock %}	
+
+
+{% block body%}
+
+<!-- <div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span12"> -->
+    <div class="span12">
+
+<div class="input-prepend input-append">
+  <span class="add-on">xively.com/feeds/</span>
+  <input class="span2 input-large" id="appendedPrependedInput" type="text">
+  <button class="btn" type="button">Go!</button>
+</div>
+
+<div  id="xively-container" class="span4">
+</div>
+
+
+</div>
+
+{% endblock %}
+
+{% block lastbody%}
+<!-- modal-gallery is the modal dialog used for the image gallery -->
+<div id="modal-gallery" class="modal modal-gallery hide fade" tabindex="-1">
+    <div class="modal-header">
+        <a class="close" data-dismiss="modal">&times;</a>
+        <h3 class="modal-title"></h3>
+    </div>
+    <div class="modal-body"><div class="modal-image"></div></div>
+    <div class="modal-footer">
+        <a class="btn btn-primary modal-next">Next <i class="icon-arrow-right icon-white"></i></a>
+        <a class="btn btn-info modal-prev"><i class="icon-arrow-left icon-white"></i> Previous</a>
+        <a class="btn btn-success modal-play modal-slideshow" data-slideshow="5000"><i class="icon-play icon-white"></i> Slideshow</a>
+        <a class="btn modal-download" target="_blank"><i class="icon-download"></i> Download</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+{% endblock %}
+
+{% block customjs %}
+
+    <script>
+      var icon_path = "{{ url_for('static', filename='icons2') }}"
+      var uploads_path = "{{ url_for('static', filename='uploads') }}"
+    </script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/jquery.fancybox.pack.js')}}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-buttons.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-media.js')}}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-thumbs.js')}}"></script>
+
+    <script src="http://d23cj0cdvyoxg0.cloudfront.net/xivelyjs-1.0.4.min.js"></script>  
+    <script type="text/javascript" src="{{ url_for('static', filename='insert.js') }}"></script>
+{% endblock %}

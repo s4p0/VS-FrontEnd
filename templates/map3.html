@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ForestWatchers.net</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">{% block base_style %}
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.mobile.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- <link href="{{ url_for('static', filename='galleriffic/css/basic.css') }}" rel="stylesheet" type="text/css"> -->
+    <!-- <link href="{{ url_for('static', filename='galleriffic/css/galleriffic-2.css') }}" rel="stylesheet" type="text/css"> -->
+
+    <link href="{{ url_for('static', filename='flexslider/flexslider.css') }}" rel="stylesheet" type="text/css">
+
+
+
+
+    <style type="text/css">
+    #map {
+        height: 316px;
+        /*max-height: 320px;*/
+    }
+    </style>
+
+    {% endblock %}
+</head>
+
+<body>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="map"></div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            <h4 class="modal-title">Modal title</h4>
+                        </div>
+                        <div class="modal-body">
+                            ...
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+            <!-- /.modal -->
+
+            <div id="carousel" class="flexslider" style="display: block; z-index: 10000; position: absolute; overflow: hidden;">
+                <ul class="slides">
+                    <li></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% block base_js%}
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
+
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='galleriffic/js/jquery.galleriffic.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='galleriffic/js/jquery.history.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='galleriffic/js/jquery.opacityrollover.js') }}"></script>
+
+    <!-- // <script type="text/javascript" src="{{ url_for('static', filename='galleria/galleria-1.2.9.js') }}"></script> -->
+    <!-- script type="text/javascript" src="{{ url_for('static', filename='galleria/themes/classic/galleria.classic.min.js') }}"></script -->
+
+    <script type="text/javascript" src="{{ url_for('static', filename='flexslider/jquery.flexslider.js') }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='flexslider/jquery.mousewheel.js') }}"></script>
+
+    {% endblock %}
+    <script type="text/javascript">
+    var lastPictures = '';
+    var map = '';
+    var photos = '';
+    var previousSelected = '';
+    var global_slider;
+
+    $(document).ready(function() {
+        // mapHeight = $(document).height() - 110;
+        mapHeight = $(document).height();
+        $('#map').css('height', mapHeight);
+
+        var parts = 5.0;
+        var hunits = $(window).width() / parts;
+        var vunits = $(window).height() / parts;
+
+        $('#carousel').css('height', 100);
+        $('#carousel').css('width', hunits * (parts - 1.0));
+        // $('#carousel').css('top', vunits * (parts - 1.0));
+
+        // $('#carousel').css('left', hunits / 2 );
+        $('#carousel').css('top', ($(window).height() / 10.2) * 9);
+
+        left = $(window).width() / 2.0 - $('#carousel').width() / 2.0;
+        $('#carousel').css('left', Math.floor(left));
+
+        $('#carousel').flexslider({
+            start: function(slider) {
+                global_slider = slider;
+            },
+            added: function(evt) {
+                var a = 0;
+            },
+            animationSpeed: 0,
+            // minItems: 0,
+            // allowOneSlide: false,
+            animationLoop: false,
+            move: 1,
+            animation: "slide",
+            controlNav: false,
+            animationLoop: false,
+            slideshow: false,
+            // animation: 'slide',
+            itemWidth: 120,
+            mousewheel: true,
+            itemMargin: 10 //,
+            // asNavFor: '#slider'
+        });
+
+
+
+        // width = $(document).width();
+        // $('#thumbs-container').css('width', width);
+
+        var SHADOW_Z_INDEX = 10;
+        var MARKER_Z_INDEX = 11;
+
+        var icon_path = "{{ url_for('static', filename='icons') }}";
+        var uploads_path = "{{ url_for('static', filename='uploads') }}";
+        var sat_imagens = "{{ url_for('static', filename='sat_imagens') }}";
+        var galleria_dir = "{{ url_for('static', filename='galleria') }}";
+        var mapserv_url = 'http://' + location.hostname + "/cgi-bin/mapserv";
+
+        /**
+         * A specific format for parsing Flickr API JSON responses.
+         */
+        OpenLayers.Format.VolunteerSensingPictures = OpenLayers.Class(OpenLayers.Format, {
+            read: function(obj) {
+
+                // if (lastPictures) {
+                //     for (var i = 0; i < lastPictures.length; i++) {
+                //         // gall.removeImageByHash('' + lastPictures[i].picture.id);
+                //     };
+                // }
+
+
+                gj = JSON.parse(obj);
+                var feature, features = [];
+                var sorted = gj.result;
+                sorted.sort(function(a, b) {
+                    if (a.picture.id > b.picture.id)
+                        return 1;
+                    if (a.picture.id < b.picture.id)
+                        return -1;
+                    // a must be equal to b
+                    return 0;
+                });
+                lastPictures = sorted;
+
+                for (var i = 0; i < sorted.length; i++) {;
+                    pic = sorted[i];
+
+                    geo = pic.picture.geom;
+                    // lonlat = new OpenLayers.LonLat(geo.coordinates[1], geo.coordinates[0]);
+                    lonlat = new OpenLayers.LonLat(geo.coordinates[0], geo.coordinates[1]);
+                    pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+
+                    pic.visible = '';
+                    pic.focus = 'unselected';
+                    feature = new OpenLayers.Feature.Vector(pointGeometry, pic);
+                    features.push(feature);
+
+
+                    // gallery
+
+                    thumb75 = uploads_path + '/thumb_75/' + pic.picture.fileName;
+                    thumb120 = uploads_path + '/thumb_120/' + pic.picture.fileName;
+                    thumb400 = uploads_path + '/thumb_400/' + pic.picture.fileName;
+                    picture = uploads_path + '/' + pic.picture.fileName;
+
+                    // gall.addImage('<li><a class="thumb" data-feature-id="' + feature.id + '" name="' + pic.picture.id + '" href="' + thumb400 + '" title="Picture' + pic.picture.id + '"><img src="' + thumb75 + '" alt="" /></a><div class="caption"><div class="download"><a href="' + picture + '">Download Original</a></div><div class="image-title">Title #0</div><div class="image-desc">Description</div></div></li>');
+
+                };
+
+                return features;
+            }
+        });
+
+        var handleClicker = function(evt) {
+            var a = evt;
+            $('#myModal').modal('toggle')
+        };
+
+
+
+        var modisBaseLayer = new OpenLayers.Layer.MapServer("Modis (250m) - 2013-08-04",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "2013216",
+                // transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            });
+
+        var estados = new OpenLayers.Layer.WMS("Estados",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "estados",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            });
+
+        var annClassfied = new OpenLayers.Layer.WMS("ANN Classification",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "ANNClassified",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 1.0
+            });
+
+        // ANNProbability
+        var annProbability = new OpenLayers.Layer.WMS("ANN Probability",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "ANNProbability",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 1.0
+            });
+
+        var hidro = new OpenLayers.Layer.WMS("Hidrográfia",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "hidro_prodes",
+                transparent: "true",
+                opacity: 0.5,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5
+            });
+
+
+        var uc = new OpenLayers.Layer.WMS("Unidade de Conservação",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "unidadeconservacao",
+                transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5
+            });
+
+        var terras = new OpenLayers.Layer.WMS("Terra Indigena",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "terraindigena",
+                transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5
+            });
+
+        var otherBaseLayer = new OpenLayers.Layer.MapServer('??? (2.5M) 2009-2011',
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: ['2009_2.5', '2011_2.5'],
+                transparent: "false",
+                format: "image/png",
+                srs: "EPSG:4326"
+            })
+
+
+        map = new OpenLayers.Map('map');
+        map.maxZoom = 20;
+        map.numZoomLevels = 26;
+
+        map.addLayer(modisBaseLayer);
+        map.addLayer(otherBaseLayer);
+        // map.addLayer(picturesLayer);
+        map.addLayer(hidro);
+        map.addLayer(uc);
+        map.addLayer(terras);
+        map.addLayer(estados);
+        map.addLayer(annClassfied);
+        map.addLayer(annProbability);
+
+        map.addControl(new OpenLayers.Control.LayerSwitcher());
+        map.addControl(new OpenLayers.Control.MousePosition());
+
+        map.setCenter(new OpenLayers.LonLat(-54.89, -3), 12);
+
+        var lookupPointRadius = {
+            'selected': {
+                pointRadius: 24
+            },
+            'unselected': {
+                pointRadius: 12
+            }
+        }
+
+        var styleMap = new OpenLayers.StyleMap({
+            externalGraphic: icon_path + '/' + 'blue_photo_a.png',
+            backgroundGraphic: icon_path + '/' + 'shadow.png',
+            graphicZIndex: MARKER_Z_INDEX,
+            backgroundGraphicZIndex: SHADOW_Z_INDEX,
+            backgroundXOffset: -0,
+            backgroundYOffset: -8,
+            title: "${orientation}",
+            display: "${visible}"
+        });
+        styleMap.addUniqueValueRules('default', 'focus', lookupPointRadius);
+
+        photos = new OpenLayers.Layer.Vector("Photos", {
+            projection: "EPSG:4326",
+            strategies: [
+                new OpenLayers.Strategy.BBOX({
+                    resFactor: 3,
+                    ratio: 1
+                }),
+                // new OpenLayers.Strategy.Cluster({
+                //     distance: 50,
+                //     threshold: 2,
+                //     activate: false
+                // })
+            ],
+            protocol: new OpenLayers.Protocol.HTTP({
+                url: "/api/pictures",
+                params: {
+                    // api_key: 'b5e8c0e287e678671c3d8b2c0f3ced85',
+                    // format: 'json',
+                    // method: 'flickr.photos.search',
+                    // extras: 'geo,url_s',
+                    // per_page: 10,
+                    // page: 1
+                },
+                callbackKey: 'jsoncallback',
+                format: new OpenLayers.Format.VolunteerSensingPictures()
+            }),
+            styleMap: styleMap
+            //, renderers: ["Canvas", "SVG", "VML"]
+        });
+
+        map.addLayer(photos);
+        photos.events.on({
+            'featuresadded': function(evt) {
+                var a = 0;
+
+                flex = $('.flexslider').data('flexslider');
+
+                if (flex) {
+                    count = flex.slides.length;
+                    for (var i = 0; i < evt.features.length; i++) {
+                        feat = evt.features[i];
+                        thumb120 = uploads_path + '/thumb_120/' + feat.attributes.picture.fileName;
+                        // $('#carousel ul').append('<li><img src="' + thumb120 + '" /></li>');
+                        // data-original-title="some title" data-placement="top" data-content="some content" rel="popover" 
+
+                        // flex.addSlide('<li id="thumbid-' + i + '"><img src="' + thumb120 + '" /></li>', i);
+                        id = 'thumbid'+i;
+
+                        li = $('<li id="' + id + '"><img src="' + thumb120 + '" /></li>');
+                        
+
+                        // img = $('<img/>').attr('src', thumb120);
+                        // li = $('<li/>').data('picture',feat).appendTo(img);
+                        flex.addSlide(li, i);
+                        $.data($('#'+id), 'picture', feat);
+
+
+                    };
+
+
+                    $('.slides > li').click(handleClicker);
+
+
+
+                }
+
+
+            },
+            'featuresremoved': function(evt) {
+                var a = 0;
+                if (slider) {
+                    while (slider.slides.length > 1) {
+                        slider.removeSlide(0)
+                    }
+                }
+            }
+        });
+
+
+
+
+    });
+    </script>
+</body>
+
+</html>

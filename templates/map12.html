@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ForestWatchers.net</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">{% block base_style %}
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" media="screen">
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+
+    <link href="{{ url_for('static', filename='twentytwenty/css/twentytwenty.css') }}" rel="stylesheet" type="text/css">
+
+    </meta>
+    <title>Maps...</title>
+    <style type="text/css">
+    html, body, #map {
+        position: absolute;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+    .navbar-fade {
+        opacity: 0.7;
+    }
+    .navbar-fade:hover {
+        opacity: 1.0;
+    }
+    #push {
+        width: 100%;
+        height: 480px;
+    }
+    .popover {
+        max-width: none;
+        /*width: 700px;*/
+    }
+    .popover_wrapper {
+        width: 500px;
+    }
+    .popover_content {
+    
+        margin-top: 2em;
+        margin-bottom: 0em;
+        line-height: 100px;
+    }
+    .frame {
+        height: 100px;
+        line-height: 100px;
+        overflow: hidden;
+        width: 100%;
+    }
+    .frame ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-size: 30px;
+    }
+    .frame ul li {
+        float: left;
+        width: 120px;
+        height: 100px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        margin-left: 2.5px;
+        margin-right: 2.5px;
+        padding-right: 5px;*/
+        background: #333;
+        color: #ddd;
+        text-align: center;
+        cursor: pointer;
+        opacity: 0.8;
+    }
+    .frame ul li video {
+        width: 120px;
+        vertical-align: middle;
+    }
+    .frame ul li.active {
+        color: #fff;
+        background: #a03232;
+        opacity: 1.0;
+    }
+    .frame ul li:hover {
+        opacity: 1.0;
+    }
+    .classification {
+    }
+    .modal-body {
+    }
+    </style>
+    {% endblock %}
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 col-md-10 col-sm-10 col-sm-offset-1 col-xs-12">
+
+                <nav class="navbar navbar-default navbar-fade" role="navigation">
+                    <div id="navbar-wrapper">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#">ForestWatchers</a>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse navbar-ex1-collapse">
+                            <ul class="nav navbar-nav">
+                                <li class="active"><a href="#">Home</a>
+                                </li>
+                                <!-- <li><a href="#">Contribute</a></li> -->
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Contribute <b class="caret"></b></a>
+                                    <ul class="dropdown-menu">
+                                        <!-- <li><a href="#">How To</a>
+                                        </li> -->
+                                        <!-- <li class="divider"></li> -->
+                                        <li><a href="#" data-layer="photos">Pictures</a>
+                                        </li>
+                                        <li><a href="#" data-layer="videos">Videos</a>
+                                        </li>
+                                        <li><a href="#">Audios</a>
+                                        </li>
+                                        <li><a href="#" data-layer="track">Tracking</a>
+                                        </li>
+                                        <li><a href="#">Data</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <ul class="nav navbar-nav navbar-right">
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Layers <b class="caret"></b></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#" data-layer="modis">MODIS (250m)</a>
+                                        </li>
+                                        <li><a href="#" data-layer="fine">LISS (2.5m)</a>
+                                        </li>
+                                        <li class="divider"></li>
+                                        <li><a href="#" data-layer="photos">Pictures</a>
+                                        </li>
+                                        <li><a href="#" data-layer="videos">Videos</a>
+                                        </li>
+                                        <li><a href="#">Audios</a>
+                                        </li>
+                                        <li><a href="#" data-layer="track">Tracking</a>
+                                        </li>
+                                        <li><a href="#">Data</a>
+                                        </li>
+                                        <li class="divider"></li>
+                                        </li>
+                                        <li><a href="#" data-layer="others">Others</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+
+                <button id="navbar-show" type="button" class="btn btn-default btn-xs">
+                    <span class="glyphicon glyphicon-chevron-down"></span>
+                </button>
+
+
+            </div>
+        </div>
+        <div class="row">
+            <div id="push">
+            </div>
+        </div>
+        
+        <div id="modal-window" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Details</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>One fine body&hellip;</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div id="footer" class="frame">
+                <ul class="slidee">
+                    <li id="videos-start">videos</li>
+                    <li id="photos-start">photos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sly/sly.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='raphael/raphael.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='twentytwenty/js/jquery.event.move.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='twentytwenty/js/jquery.twentytwenty.js') }}"></script>
+
+    <script type="text/javascript">
+    var getTileCentered = function(feature, layer, resolution) {
+        ln = new OpenLayers.LonLat(feature.geometry.x, feature.geometry.y);
+        size = layer.tileSize.w;
+        delta = size * resolution;
+        bnd = new OpenLayers.Bounds(ln.lon - delta, ln.lat - delta, ln.lon + delta, ln.lat + delta);
+        return layer.getURL(bnd);
+    }
+    var getPropertiesTable = function(feature, properties) {
+        table = $('<table/>');
+        table.addClass('table').addClass('table-condensed').addClass('table-bordered')
+        thead = $('<thead/>');
+        tbody = $('<tbody/>');
+        tr = $('<tr/>')
+            .append($('<th/>').text('prop'))
+            .append($('<th/>').text('value'));
+        thead.append(tr);
+
+        for (var i = 0; i < properties.length; i++) {
+            tr = $('<tr/>');
+            if (properties[i] == 'magneticHeading') {
+                value = feature[properties[i]];
+                tr.append($('<td/>').text('compass'));
+                tr.append(
+                    $('<td/>').text(getCardinal(value) + ' ')
+                    .append(
+                        $('<span/>')
+                        .addClass('glyphicon glyphicon-arrow-up')
+                        .css('-webkit-transform', 'rotate(' + value + 'deg)'))); //// $('<td/>').text(getCardinal(value) + ' ')
+                // tr.append($('<td/>').text());                
+            } else if (properties[i] == 'fileName') {
+                tr.append($('<td/>').text('full size'));
+                tr.append($('<td/>')
+                    .append($('<a/>')
+                        .attr('href', 'static/uploads/' + feature[properties[i]])
+                        .attr('target', '_blank')
+                        .text('image')));
+            } else {
+
+                tr.append($('<td/>').text(properties[i]));
+                tr.append($('<td/>').text(feature[properties[i]]));
+            }
+            tbody.append(tr);
+        }
+
+        // table.append(thead).append(tbody);
+        table.append(tbody);
+
+        return $('<p>').append(table).html();
+
+        //   <table class="table table-condensed">
+        //   <thead>
+        //     <tr>
+        //       <th>#</th>
+        //       <th>First Name</th>
+        //       <th>Last Name</th>
+        //       <th>Username</th>
+        //     </tr>
+        //   </thead>
+        //   <tbody>
+        //     <tr>
+        //       <td>1</td>
+        //       <td>Mark</td>
+        //       <td>Otto</td>
+        //       <td>@mdo</td>
+        //     </tr>
+        //     <tr>
+        //       <td>2</td>
+        //       <td>Jacob</td>
+        //       <td>Thornton</td>
+        //       <td>@fat</td>
+        //     </tr>
+        //     <tr>
+        //       <td>3</td>
+        //       <td colspan="2">Larry the Bird</td>
+        //       <td>@twitter</td>
+        //     </tr>
+        //   </tbody>
+        // </table>
+    }
+    var getVisibleFeatures = function(layers) {
+        $.each(layers, function(index, layer) {
+            // var isPhotosVisible = AllLayers.photos.visibility;
+            // var isVideosVisible = AllLayers.videos.visibility;
+            //var isPhotoVisible = AllLayers.photos.visibility;
+            extent = map.getExtent();
+            // layer = AllLayers.photos;
+            feats = layer.features;
+            visibles = [];
+            // if is visible
+            $('[data-feature-layer=' + layer.name + ']').addClass('featRemove');
+
+            $.each(feats, function(index, feature) {
+                // if (index == 0) $('.' + feature.attributes.type).addClass('featRemove');
+                if (extent.containsLonLat(new OpenLayers.LonLat(feature.geometry.x, feature.geometry.y)))
+                    visibles.push(feature);
+            });
+            // if are present already
+            // in thumbnails
+            if (visibles.length > 0 && layer.visibility) {
+                $.each(visibles, function(index, visible) {
+                    element = $('#' + visible.fid);
+                    if (element.length == 0) {
+                        // add element by type
+                        element = $('<li/>')
+                        element
+                            .attr('data-feature-layer', layer.name)
+                        // .addClass(visible.attributes.type)
+                        .attr('data-feature-type', visible.attributes.type)
+                            .attr('id', visible.fid)
+                            .attr('data-feature-id', visible.id)
+                        var filename;
+                        var path;
+                        // if (visible.attributes.type == 'videoItem') {
+                        if (visible.attributes.type == 'video') {
+                            path = 'http://localhost/video/';
+                            filename = visible.attributes.video.fileName;
+                            // element.append(
+                            //     $('<video/>')
+                            //     .attr('width', '200px')
+                            //     .append(
+                            //         $('<source/>')
+                            //         .attr('src', path + filename)
+                            //         .attr('video/mp4')
+                            //     ))
+                            //     .insertAfter('#videos-start');
+
+                            element
+                            // .attr('data-feature-layer', 'videos')
+                            .attr('data-video-source', path + filename)
+                                .append($('<div/>')
+                                    .css('position', 'absolute'))
+                            // .append($('<video/>')
+                            //     // .attr('height', 100)
+                            //     // .attr('controls', true)
+                            //     .append(
+                            //         $('<source/>')
+                            //         .attr('src', path + filename))))
+                            .append($('<div/>')
+                                .addClass('glyphicon glyphicon-play-circle'))
+                                .insertAfter('#videos-start');
+
+                        }
+                        // if (visible.attributes.type == 'photoItem') {
+                        // if (visible.attributes.type == 'picture') {
+                        if (visible.attributes.type == 'picture') {
+                            path = '/static/uploads/thumb_120/';
+                            filename = visible.attributes.picture.fileName;
+                            // element
+                            //     .attr('data-layer', 'photos')
+                            element.append(
+                                $('<img/>')
+                                .attr('src', path + filename)
+                            )
+                                .insertAfter('#photos-start');
+                        }
+                        $.data(element[0], 'feat', visible);
+                        // sly.add(element);
+                        // var entered = false;
+                        // $('#' + visible.fid).mouseenter(function (e){
+                        //     console.log('mouseenter');
+                        // });
+                        // $('#' + visible.fid).mouseleave(function (e){
+                        //     console.log('mouseleave');
+                        // });
+                        // $('#' + visible.fid).mouseover(hoverLi);
+                    } else {
+                        element.removeClass('featRemove');
+                        element.attr('data-feature-id', visible.id)
+                    }
+                });
+            }
+            toremove = $('.featRemove');
+            if (toremove.length > 0)
+                toremove.popover('destroy');
+            toremove.remove();
+            sly.reload();
+        });
+    }
+    var featureCache = function() {
+        var self = this;
+        self.cache = {};
+
+        self.addFeature = function(featureid, feature) {
+            this.cache[featureid] = feature;
+        }
+
+        self.getFeature = function(featureid) {
+            return this.cache[featureid];
+        }
+    }
+
+    getCompassValue = function(value) {
+        var index = value - 22.5;
+        if (index < 0)
+            index += 360;
+        index = parseInt(index / 8);
+        return index;
+    }
+
+    getCardinal = function(value) {
+        var bearings = ["NE", "E", "SE", "S", "SW", "W", "NW", "N"];
+
+        var index = value - 22.5;
+        if (index < 0)
+            index += 360;
+        index = parseInt(index / 45);
+
+        return (bearings[index]);
+    }
+
+    var cache = new featureCache();
+    var map;
+    var SHADOW_Z_INDEX = 99;
+    var MARKER_Z_INDEX = 100;
+    var icon_path = "{{ url_for('static', filename='icons') }}";
+    // var  _url = 'http://192.168.2.144/cgi-bin/mapserv';
+    var mapserv_url = 'http://' + location.hostname + "/cgi-bin/mapserv";
+
+    var geographic = new OpenLayers.Projection("EPSG:4326");
+    var mercator = new OpenLayers.Projection("EPSG:900913");
+    var selector = {
+        photos: '',
+        videos: ''
+    };
+
+    var AllLayers = {
+        osm: new OpenLayers.Layer.OSM("OpenStreetMap", null, {
+            buffer: 3
+        }, {
+            isBaseLayer: false,
+            opacity: 1.0,
+        }),
+        modis: new OpenLayers.Layer.WMS("Modis (250m) - 2013-08-04",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "2013216",
+                transparent: "true",
+                units: 'meters'
+            }, {
+                visibility: false,
+                isBaseLayer: false,
+                singleTile: false,
+                opacity: 0.8,
+                // maxExtent: new OpenLayers.Bounds(minx,miny,maxx,maxy),
+                // getMaxExtent: new OpenLayers.Bounds(-58.5446999999999989, -13.1942000000000004, -49.4528999999999996, 5.6916000000000002),
+                maxResolution: "auto"
+            }),
+        fine: new OpenLayers.Layer.WMS('??? (2.5M) 2009-2011',
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: ['2009_2.5', '2011_2.5'],
+                // layers: ['2009_2.5'],
+                transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.8,
+                isBaseLayer: false,
+                singleTile: false
+            }),
+        classification: new OpenLayers.Layer.WMS("ANN Classification",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "ANNClassified",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 1.0,
+                isBaseLayer: false
+            }),
+        probability: new OpenLayers.Layer.WMS("ANN Probability",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "ANNProbability",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 1.0,
+                isBaseLayer: false
+            }),
+        hydrography: new OpenLayers.Layer.WMS("Brazilian Hydrography",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "hidro_prodes",
+                transparent: "true",
+                opacity: 0.5,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5,
+                isBaseLayer: false
+            }),
+        conservation: new OpenLayers.Layer.WMS("Protected Area",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "unidadeconservacao",
+                transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5,
+                isBaseLayer: false
+            }),
+        indigenous: new OpenLayers.Layer.WMS("Indigenous Territory",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "terraindigena",
+                transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5,
+                isBaseLayer: false
+            }),
+        states: new OpenLayers.Layer.WMS("Brazilian States",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "estados",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: true,
+                isBaseLayer: false
+            })
+    };
+
+    bboxStrategy = new OpenLayers.Strategy.BBOX({
+        resFactor: 1,
+        ratio: 1
+    });
+
+    OpenLayers.Format.VolunteerSensingPictures = OpenLayers.Class(OpenLayers.Format, {
+        read: function(obj) {
+            bboxStrategy.deactivate();
+            this.data = obj;
+
+            gj = JSON.parse(obj);
+            var features = [];
+
+            for (var i = 0; i < gj.result.length; i++) {
+                pic = gj.result[i];
+                var feature = undefined;
+                var geo;
+                var fid;
+
+
+                // feature = cache.getFeature(pic.picture.id);
+                if (feature == undefined) {
+                    // pic.angle = pic.picture.magneticHeading;
+                    // pic.cardinal = getCardinal(pic.picture.magneticHeading);
+                    // pic.label = 'cb';
+                    if (pic.picture) {
+                        geo = pic.picture.geom;
+                        // pic.type = 'photoItem';
+                        pic.type = 'picture';
+                        fid = pic.type + pic.picture.id;
+                    } else if (pic.video) {
+                        geo = pic.video.geom;
+                        // pic.type = 'videoItem';
+                        pic.type = 'video'
+                        fid = pic.type + pic.video.id;
+                    }
+                    lonlat = new OpenLayers.LonLat(geo.coordinates[0], geo.coordinates[1]);
+                    pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+
+                    feature = new OpenLayers.Feature.Vector(pointGeometry, pic);
+                    feature.fid = fid;
+                    // cache.addFeature(pic.picture.id, feature);
+                }
+                features.push(feature);
+            };
+            return features;
+        }
+    });
+
+    photoLayer = new OpenLayers.Layer.Vector("photos", {
+        // renderers: ["Canvas", "SVG", "VML"],
+        renderers: ["Canvas"],
+        eventListeners: {
+            "featuresadded": function(e) {},
+            'featuresremoved': function(e) {},
+            'refresh': function(e) {},
+            'loadend': function(e) { //alert('photo loadend')
+                getVisibleFeatures([this]);
+            }
+        },
+        projection: "EPSG:4326",
+        strategies: [new OpenLayers.Strategy.BBOX({
+            resFactor: 1,
+            ratio: 1
+        })],
+        // strategies: new OpenLayers.Strategy.Fixed(),
+        protocol: new OpenLayers.Protocol.HTTP({
+            url: "/api/pictures",
+            params: {},
+            callbackKey: 'jsoncallback',
+            format: new OpenLayers.Format.VolunteerSensingPictures({
+                keepData: true
+            }),
+        }),
+        rendererOptions: {
+            yOrdering: true
+        },
+        styleMap: new OpenLayers.StyleMap({
+            'default': OpenLayers.Util.applyDefaults({
+                graphic: true,
+                graphicXOffset: -16 * 0.7,
+                graphicYOffset: -37 * 0.7,
+                graphicWidth: 32 * 0.7,
+                graphicHeight: 37 * 0.7,
+
+                externalGraphic: icon_path + '/' + 'blue_photo_a.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+                graphicZIndex: MARKER_Z_INDEX,
+                backgroundGraphicZIndex: SHADOW_Z_INDEX,
+                backgroundXOffset: -2 * 0.7,
+                backgroundYOffset: -16 * 0.7,
+
+                graphicOpacity: 0.3,
+            }, OpenLayers.Feature.Vector.style["default"]),
+            'select': OpenLayers.Util.applyDefaults({
+
+                graphic: true,
+                
+                graphicWidth: 32 * 1.2,
+                graphicHeight: 37 * 1.2,
+
+                graphicXOffset: -16 * 1.2,
+                graphicYOffset: -37 * 1.2,
+                
+
+                externalGraphic: icon_path + '/' + 'blue_photo_a.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+                // graphicZIndex: MARKER_Z_INDEX,
+                // backgroundGraphicZIndex: SHADOW_Z_INDEX,
+                backgroundXOffset: -2 * 1.2,
+                backgroundYOffset: -16 * 1.2,
+
+
+                graphicOpacity: 1.0,
+                graphicZIndex: 600,
+                backgroundGraphicZIndex: 599,
+                // pointerEvents: "visiblePainted"
+            }, OpenLayers.Feature.Vector.style["default"])
+        }),
+    })
+    AllLayers['photos'] = photoLayer;
+
+    videoLayer = new OpenLayers.Layer.Vector("videos", {
+        eventListeners: {
+            "featuresadded": function(e) {},
+            'featuresremoved': function(e) {},
+            'refresh': function(e) {},
+            'loadend': function(e) { //alert('photo loadend')
+                getVisibleFeatures([this]);
+            }
+
+        },
+        projection: "EPSG:4326",
+        strategies: [new OpenLayers.Strategy.BBOX({
+            resFactor: 1,
+            ratio: 1
+        })],
+        // strategies: new OpenLayers.Strategy.Fixed(),
+        protocol: new OpenLayers.Protocol.HTTP({
+            url: "/api/videos",
+            params: {},
+            callbackKey: 'jsoncallback',
+            format: new OpenLayers.Format.VolunteerSensingPictures({
+                keepData: true
+            }),
+        }),
+        rendererOptions: {
+            yOrdering: true
+        },
+        styleMap: new OpenLayers.StyleMap({
+            'default': OpenLayers.Util.applyDefaults({
+                graphic: true,
+                graphicWidth: 32 * 0.6,
+                graphicHeight: 37 * 0.6,
+                externalGraphic: icon_path + '/' + 'green_video_a.png',
+                // backgroundGraphic: icon_path + '/' + 'shadow.png',
+                graphicZIndex: MARKER_Z_INDEX,
+                // backgroundGraphicZIndex: SHADOW_Z_INDEX,
+                backgroundXOffset: -2 * 0.6,
+                backgroundYOffset: -16 * 0.6,
+                graphicOpacity: 0.6,
+            }, OpenLayers.Feature.Vector.style["default"]),
+            'select': OpenLayers.Util.applyDefaults({
+                graphic: true,
+                graphicWidth: 32 * 1.3,
+                graphicHeight: 37 * 1.3,
+                externalGraphic: icon_path + '/' + 'green_video_a.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+                graphicZIndex: MARKER_Z_INDEX,
+                backgroundGraphicZIndex: SHADOW_Z_INDEX,
+                backgroundXOffset: -2 * 1.3,
+                backgroundYOffset: -16 * 1.3,
+                graphicOpacity: 0.9,
+
+                // graphicOpacity: 1.0,
+                // graphicZIndex: 600,
+                // pointerEvents: "visiblePainted"
+
+                graphicZIndex: 600,
+                backgroundGraphicZIndex: 599,
+            }, OpenLayers.Feature.Vector.style["default"])
+        }),
+    })
+
+    AllLayers['videos'] = videoLayer;
+
+    var changeLayerVisibility = function(layers, element) {
+        var isChecked = element.find('span').length == 1;
+        if (isChecked) {
+            element.html(element.text());
+
+            for (var i = 0; i < layers.length; i++) {
+                layers[i].setVisibility(false);
+            }
+        } else {
+
+            element.html(element.text() + ' <span class="glyphicon glyphicon-ok"></span>');
+            for (var i = 0; i < layers.length; i++) {
+                layers[i].setVisibility(true);
+            }
+        }
+    }
+
+    var paper;
+    var hoverLi = function(e) {
+        if (paper) paper.remove();
+        var element;
+
+        if ($(e.target).is('img')) {
+            element = $(e.target).parent();
+            // return;
+        } else {
+            return;
+            // element = $(e.target);
+        }
+        // paper = Raphael(0,0, $(window).width(), $(window).height());
+        // if (element.hasClass('photoItem')) {
+        // if (element.hasClass('picture')) {
+        if (element.attr('data-feature-type') == 'picture') {
+            fid = element.attr('id');
+            feat = AllLayers.photos.getFeatureByFid(fid);
+
+            lonlat = new OpenLayers.LonLat(feat.geometry.x, feat.geometry.y);
+            px = map.getViewPortPxFromLonLat(lonlat);
+
+            // pos = $(element).position();
+            // pos = element.offset();
+
+            paper = Raphael(0, 0, $(window).width(), $(window).height());
+            c = paper.circle(e.screenX, e.screenY, element.width() / 2.0);
+            // c.glow({fill: true});
+            c.animate({
+                cx: px.x,
+                cy: px.y,
+                r: 10
+            }, 500, function(e) {
+                paper.remove();
+            });
+        }
+    };
+    $(document).ready(function() {
+        // $('#push').height() / $(window).height() = 0.7
+        $('#push').css('height', $(window).height() * 0.69);
+
+        $('#modal-window').on('shown.bs.modal', function() {
+            $(".twentytwenty-container").twentytwenty({
+                default_offset_pct: 0.7
+            });
+        });
+        // paper = Raphael(0,0, $(window).width(), $(window).height());
+
+        $('[data-layer]').parent().click(function(e) {
+            var element;
+
+            if ($(e.target).is('span')) {
+                element = $(e.target).parent();
+            } else {
+                element = $(e.target);
+            }
+
+            var layers;
+            var layerName = element.data('layer');
+            if (layerName == 'others') {
+                layers = [AllLayers.hydrography, AllLayers.conservation, AllLayers.indigenous];
+            } else if (layerName == 'track') {
+
+                if (!AllLayers.track) {
+                    var track = new OpenLayers.Layer.Vector("Tracking", {
+                        strategies: [new OpenLayers.Strategy.Fixed()],
+                        protocol: new OpenLayers.Protocol.HTTP({
+                            url: '/static/tracking/track.gpx',
+                            // format: new OpenLayers.Format.GPX({
+                            //     extractWaypoints: true,
+                            //     extractTracks: false,
+                            //     extractRoutes: false
+                            // })
+                            format: new OpenLayers.Format.GPX()
+
+                        }),
+                        styleMap: new OpenLayers.StyleMap({
+                            'default': OpenLayers.Util.applyDefaults({
+                                strokeColor: "yellow",
+                                strokeWidth: 5,
+                                strokeOpacity: 0.5
+                            }, OpenLayers.Feature.Vector.style["default"]),
+                            'select': OpenLayers.Util.applyDefaults({
+                                strokeColor: "orange",
+                                strokeWidth: 10,
+                                strokeOpacity: 0.8
+                            }, OpenLayers.Feature.Vector.style["default"])
+                        }),
+                        // style: {
+                        //     strokeColor: "yellow",
+                        //     strokeWidth: 10,
+                        //     strokeOpacity: 0.5
+                        // },
+                        projection: new OpenLayers.Projection("EPSG:4326")
+                    });
+
+                    map.addLayer(track);
+                    track.events.on({
+                        'featureselected': function(selection) {
+                            // alert('selected');
+                            var a = 0;
+                        },
+                        'featureunselected': function(selection) {
+                            // alert('unselected');
+                            var a = 0;
+                        }
+                    });
+
+
+                    var selectGPX = new OpenLayers.Control.SelectFeature(track, {
+                        multiple: false,
+                        hover: false
+                    });
+                    map.addControl(selectGPX);
+
+                    selectGPX.activate();
+
+                    AllLayers['track'] = track;
+                }
+                layers = [AllLayers[layerName]];
+            } else {
+                layers = [AllLayers[layerName]];
+            }
+
+            changeLayerVisibility(layers, element);
+            e.preventDefault();
+        });
+
+        $('#navbar-show').click(function(e) {
+            $('.navbar').toggle();
+        });
+
+        map = new OpenLayers.Map({
+
+            projection: mercator,
+            div: "map",
+            allOverlays: true,
+            layers: [AllLayers.osm],
+            controls: [
+                new OpenLayers.Control.Navigation({
+                    dragPanOptions: {
+                        enableKinetic: true
+                    }
+                }),
+            ],
+            center: [0, 0],
+            zoom: 2
+        });
+
+
+
+        for (layer in AllLayers) {
+            if (layer != 'osm')
+                map.addLayer(AllLayers[layer]);
+        }
+
+        // $('[data-layer=layer]')
+
+        // map.events.register("preaddlayer", map, function(evt) {
+        //     var a = 0;
+        // });
+
+        // map.events.register("changelayer", map, function(evt) {
+        //     var a = 0;
+        // });
+
+        // map.addControl(new OpenLayers.Control.Zoom)
+
+        // map.events.register("zoomend", map, function(evt) {});
+
+
+
+
+
+        map.events.register("moveend zoomend", map, function(evt) {
+            // getVisibleFeatures([/*AllLayers.photos,*/ AllLayers.videos]);
+            getVisibleFeatures([AllLayers.photos, AllLayers.videos]);
+        });
+
+        selector['photos'] = new OpenLayers.Control.SelectFeature(AllLayers.photos,{
+            multiple: false,
+            hover: false
+        });
+        map.addControl(selector['photos']);
+        selector['photos'].activate();
+
+        selector['videos'] = new OpenLayers.Control.SelectFeature(AllLayers.photos,{
+            multiple: false,
+            hover: false
+        });
+        map.addControl(selector['videos']);
+        selector['videos'].activate();
+
+
+
+
+                    
+                    
+
+
+
+        // $('.featRemove').destroy();
+        // sly.reload();
+
+        // });
+
+        var options = { //$frame.sly(
+            horizontal: 1,
+            itemNav: 'centered',
+            // smart: 1,
+            activateOn: 'click',
+            mouseDragging: 1,
+            touchDragging: 1,
+            // releaseSwing: 1,
+            startAt: 0,
+            // scrollBar: $wrap.find('.scrollbar'),
+            scrollBy: 1,
+            // pagesBar: $wrap.find('.pages'),
+            activatePageOn: 'click',
+            speed: 10,
+            // elasticBounds: 1,
+            // easing: 'easeOutExpo',
+            easing: 'swing',
+            moveBy: 10,
+            dragHandle: 1,
+            // dynamicHandle: 1,
+            clickBar: 1,
+        };
+
+        sly = new Sly('#footer', options);
+        sly.init();
+
+        sly.on('moveEnd', function(e) {
+            // var a = 0;
+            $('li[data-original-title]').css('left', sly.pos.dest);
+            if (sly.pos.cur != sly.pos.dest) {
+                // $('li[data-original-title]').popover('hide');
+
+                $('li[data-original-title]').popover('hide');
+            } else {
+                $('li[data-original-title]').popover('show');
+            }
+        });
+
+        sly.on('desactive', function(eventName, itemIndex) {
+            for(control in selector){
+                selector[control].unselectAll();
+            }
+            $(sly.getPos(itemIndex).el).popover('destroy');
+        });
+        sly.on('active', function(eventName, itemIndex) {
+            // var a = 0;
+
+            element = sly.getPos(itemIndex).el;
+
+            // feature = $(element).data('feat');
+            featureid = $(element).attr('data-feature-id');
+            layer = $(element).attr('data-feature-layer');
+            feature = AllLayers[layer].getFeatureById(featureid);
+
+            selector[layer].select(feature);
+
+
+
+            type = $(element).attr('data-feature-type');
+
+            table = getPropertiesTable(
+                feature.attributes[type], ['magneticHeading', 'compassManual', 'longitude', 'latitude', 'accuracy']
+            );
+
+            // src = $(element).find('source').attr('src');
+            content = table;
+            // content += '<a href="" class="more">see more</a>';
+            content += '<a data-toggle="modal" href="#modal-window">details</a>'
+
+            table2 = getPropertiesTable(
+                feature.attributes[type], ['magneticHeading', 'compassManual', 'longitude', 'latitude', 'accuracy', 'fileName', 'deviceid']
+            );
+
+            // url = getTileCentered(feature, AllLayers.modis, map.getResolution());
+            url = getTileCentered(feature, AllLayers.modis, map.getResolutionForZoom(12));
+            url2 = getTileCentered(feature, AllLayers.classification, map.getResolutionForZoom(12));
+            url3 = getTileCentered(feature, AllLayers.probability, map.getResolutionForZoom(12));
+
+            modal_content = '';
+            if (layer == 'videos') {
+                modal_content += '<video controls style="width: 100%;">' + '<source src="http://localhost/video/' + feature.attributes.video.fileName + '" type="video/mp4" />' + '</video>';
+            }
+            // ext = AllLayers.modis.getMaxExtent;
+            // point = new OpenLayers.LonLat(feature.geometry.x, feature.geometry.y).transform(geographic, mercator);
+
+            // if(ext.containsLonLat(point))//if(AllLayers.modis.)
+            modal_content += '<div class="container"><div style="float: left;"><img src="' + url + '" /></div><div class="twentytwenty-wrapper">' + '<div class="classification twentytwenty-container">' + '<img src="' + url2 + '" />' + '<img src="' + url3 + '" />' + '</div></div></div>';
+
+            modal_content += table2;
+
+            $('.modal-body').html(modal_content);
+            // $(".twentytwenty-container").twentytwenty({default_offset_pct: 0.7});  
+
+
+
+
+
+
+            var popover_options = {
+                anmation: true,
+                html: true,
+                placement: 'top',
+                container: 'body',
+                content: content,
+                title: '&nbsp; <button id="popover-close" type="button" class="close" data-destroy="modal" aria-hidden="true">&times;</button>'
+
+                // container: '#footer'
+            }
+            // $('li[data-original-title]').popover('destroy');
+            $('.frame li').popover('destroy');
+
+            $(element).popover(popover_options);
+            $(element).popover('show');
+
+            $('#popover-close').on('click', function(e) {
+                // this.popover('destroy');
+                // $(this).parent().popover('destroy');
+                $(sly.getPos(sly.rel.activeItem).el).popover('destroy');
+            });
+            $('.popover').on('hidden.bs.popover', function(e) {
+                $(sly.getPos(sly.rel.activeItem).el).popover('destroy');
+            });
+
+        });
+
+    });
+    </script>
+
+</body>
+
+</html>

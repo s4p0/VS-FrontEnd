@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ForestWatchers.net</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">{% block base_style %}
+    <!-- Latest compiled and minified CSS -->
+    <!-- <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.css" /> -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" media="screen">
+    <!-- Optional theme -->
+    <!-- <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css"> -->
+    <!-- <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.custom.css') }}" rel="stylesheet" type="text/css"> -->
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+
+    </meta>
+    <title>Maps...</title>
+    <style type="text/css">
+    html, body, #map {
+        position: absolute;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .navbar-fade {
+        opacity: 0.7;
+    }
+    .navbar-fade:hover {
+        opacity: 1.0;
+    }
+    </style>
+    {% endblock %}
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 col-md-10 col-sm-10 col-sm-offset-1 col-xs-12">
+
+                <nav class="navbar navbar-default navbar-fade" role="navigation">
+                    <div id="navbar-wrapper">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#">ForestWatchers</a>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse navbar-ex1-collapse">
+                            <ul class="nav navbar-nav">
+                                <li class="active"><a href="#">Overview Map</a>
+                                </li>
+                                <li><a href="#">Help Us</a>
+                                </li>
+                                <!-- <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#">Action</a>
+                                        </li>
+                                        <li><a href="#">Another action</a>
+                                        </li>
+                                        <li><a href="#">Something else here</a>
+                                        </li>
+                                        <li><a href="#">Separated link</a>
+                                        </li>
+                                        <li><a href="#">One more separated link</a>
+                                        </li>
+                                    </ul>
+                                </li> -->
+                            </ul>
+
+                            <ul class="nav navbar-nav navbar-right">
+                                <!-- <li><a href="#">Link</a></li> -->
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#">Action <span class="glyphicon glyphicon-ok"></span></a>
+                                        </li>
+                                        <li><a href="#">Another action <span class="glyphicon glyphicon-chevron-down"></span></a>
+                                        </li>
+                                        <li><a href="#">Something else here</a>
+                                        </li>
+                                        <li><a href="#">Separated link</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- /.navbar-collapse -->
+                    </div>
+                </nav>
+
+                <button id="navbar-show" type="button" class="btn btn-default btn-xs">
+                    <span class="glyphicon glyphicon-chevron-down"></span>
+                </button>
+
+
+            </div>
+        </div>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sly/sly.js') }}"></script>
+    <script type="text/javascript">
+    var map;
+    // var custom_style =  '{{ url_for('static', filename='OpenLayers/theme/default/style.custom.css') }}'
+    var mapserv_url = 'http://' + location.hostname + "/cgi-bin/mapserv";
+
+    var geographic = new OpenLayers.Projection("EPSG:4326");
+    var mercator = new OpenLayers.Projection("EPSG:900913");
+
+    $(document).ready(function() {
+        $('#navbar-show').click(function(e) {
+            $('.navbar').toggle();
+        });
+
+        map = new OpenLayers.Map({
+            // theme: 'style.custom',
+            // theme: custom_style,
+            projection: mercator,
+            div: "map",
+            allOverlays: true,
+            layers: [
+                // new OpenLayers.Layer.OSM("OSM (without buffer)"),
+                new OpenLayers.Layer.OSM("OpenStreetMap", null, {
+                    buffer: 3
+                }),
+                new OpenLayers.Layer.WMS("Modis (250m) - 2013-08-04",
+                    mapserv_url, {
+                        map: "/var/www/local.map",
+                        layers: "2013216",
+                        transparent: "true"
+                    }, {
+                        visibility: true,
+                    }),
+                new OpenLayers.Layer.WMS("ANN Classification",
+                    mapserv_url, {
+                        map: "/var/www/local.map",
+                        layers: "ANNClassified",
+                        transparent: "true",
+                        opacity: 1.0,
+                        // format: "image/png",
+                        srs: "EPSG:4326"
+                    }, {
+                        visibility: false,
+                        opacity: 1.0
+                    }),
+                new OpenLayers.Layer.WMS("ANN Probability",
+                    mapserv_url, {
+                        map: "/var/www/local.map",
+                        layers: "ANNProbability",
+                        transparent: "true",
+                        opacity: 1.0,
+                        // format: "image/png",
+                        srs: "EPSG:4326"
+                    }, {
+                        visibility: false,
+                        opacity: 1.0
+                    }),
+                new OpenLayers.Layer.WMS("Brazilian Hydrography",
+                    mapserv_url, {
+                        map: "/var/www/local.map",
+                        layers: "hidro_prodes",
+                        transparent: "true",
+                        opacity: 0.5,
+                        // format: "image/png",
+                        srs: "EPSG:4326"
+                    }, {
+                        visibility: false,
+                        opacity: 0.5
+                    }),
+                new OpenLayers.Layer.WMS("Conservation Unit",
+                    mapserv_url, {
+                        map: "/var/www/local.map",
+                        layers: "unidadeconservacao",
+                        transparent: "true",
+                        // format: "image/png",
+                        srs: "EPSG:4326"
+                    }, {
+                        visibility: false,
+                        opacity: 0.5
+                    }),
+                new OpenLayers.Layer.WMS("Indigenous Territory",
+                    mapserv_url, {
+                        map: "/var/www/local.map",
+                        layers: "terraindigena",
+                        transparent: "true",
+                        // format: "image/png",
+                        srs: "EPSG:4326"
+                    }, {
+                        visibility: false,
+                        opacity: 0.5
+                    }),
+                new OpenLayers.Layer.WMS("Brazilian States",
+                    mapserv_url, {
+                        map: "/var/www/local.map",
+                        layers: "estados",
+                        transparent: "true",
+                        opacity: 1.0,
+                        // format: "image/png",
+                        srs: "EPSG:4326"
+                    }, {
+                        visibility: false,
+                    })
+            ],
+            controls: [
+                new OpenLayers.Control.Navigation({
+                    dragPanOptions: {
+                        enableKinetic: true
+                    }
+                }),
+                // new OpenLayers.Control.PanZoom(),
+                // new OpenLayers.Control.Attribution()
+            ],
+            center: [0, 0],
+            zoom: 2
+        });
+
+        // map.addControl(new OpenLayers.Control.LayerSwitcher());
+        map.events.register("zoomend", map, function(evt) {
+
+        });
+
+    });
+    </script>
+
+</body>
+
+</html>

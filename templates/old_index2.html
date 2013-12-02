@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block customcss %}
+	<link rel="stylesheet" href="{{ url_for('static', filename='blueimp/css/blueimp-gallery.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='gallery/css/bootstrap-image-gallery.css') }}">
+
+  <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+  <link href="{{ url_for('static', filename='OpenLayers/theme/default/google.css') }}" rel="stylesheet" type="text/css">
+  <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.mobile.css') }}" rel="stylesheet" type="text/css">
+	
+  <style type="text/css">
+  .img-thumb{
+    width: 150px;
+  }
+  #map {
+      height: 400px;
+      background-color: #eee;
+  }
+  #map label {
+      width: auto;
+      display: inline;
+  }
+  #map img {
+      max-width: none;
+  }
+  .layersDiv label {
+      color: white;
+  }
+  </style>
+{% endblock %}	
+
+{% block childbody %}
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="row-fluid">
+    <!-- <div class="span2"></div> -->
+    <div class="span12">
+      <h3>Módulo de Sensoriamento Voluntário</h3>
+      
+      <div id="map">
+      </div>
+
+      <div id="links">
+          <!-- <a href="images/banana.jpg" title="Banana">
+              <img src="images/thumbnails/banana.jpg" alt="Banana">
+          </a>
+          <a href="images/apple.jpg" title="Apple">
+              <img src="images/thumbnails/apple.jpg" alt="Apple">
+          </a>
+          <a href="images/orange.jpg" title="Orange">
+              <img src="images/thumbnails/orange.jpg" alt="Orange">
+          </a> -->
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block footer%}
+{% endblock %}
+
+{% block lastbody%}
+<!-- The Gallery as lightbox dialog, should be a child element of the document body -->
+<div id="blueimp-gallery" class="blueimp-gallery">
+    <div class="slides"></div>
+    <h3 class="title"></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+</div>
+{% endblock %}
+
+
+{% block customjs %}
+    <script>
+      var icon_path = "{{ url_for('static', filename='icons2') }}"
+      var uploads_path = "{{ url_for('static', filename='uploads') }}"
+    </script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='blueimp/js/blueimp-gallery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='index2.js') }}"></script>
+{% endblock %}

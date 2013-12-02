@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ForestWatchers.net</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <!-- Latest compiled and minified CSS -->
+    <!-- <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.css" /> -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" media="screen">
+    <!-- Optional theme -->
+    <!-- <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css"> -->
+    <!-- <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.custom.css') }}" rel="stylesheet" type="text/css"> -->
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- <link href="{{ url_for('static', filename='twentytwenty/css/foundation.css') }}" rel="stylesheet" type="text/css"> -->
+    <link href="{{ url_for('static', filename='twentytwenty/css/twentytwenty.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- Add fancyBox -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/jquery.fancybox.css')}}" type="text/css" media="screen" />
+    <!-- Optionally add helpers - button, thumbnail and/or media -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-buttons.css')}}" type="text/css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-thumbs.css')}}" type="text/css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='chart2/rickshaw.css') }}">
+</head>
+
+<style>
+#chart_container {
+    display: inline-block;
+    font-family: Arial, Helvetica, sans-serif;
+}
+#chart {
+    float: left;
+}
+#legend {
+    float: left;
+    margin-left: 15px;
+}
+#y_axis {
+    float: left;
+    width: 40px;
+}
+</style>
+
+<body>
+
+    <!-- Button trigger modal -->
+    <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#csv_form">
+        Launch demo modal
+    </button>
+
+
+
+    <div class="modal fade" id="csv_form">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">CSV INPUT FORM</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="myform" class="form" role="form" action="api/csv_fixed_data">
+                        <div class="form-group">
+                            <label class="sr-only" for="Longitude">Longitude</label>
+                            <input type="text" name="lon" class="form-control" id="Longitude" placeholder="Longitude">
+                        </div>
+                        <div class="form-group">
+                            <label class="sr-only" for="Latitude">Latitude</label>
+                            <input type="text" name="lat" class="form-control" id="Latitude" placeholder="Latitude">
+                        </div>
+                        <div class="form-group">
+                            <label class="sr-only" for="csvdata">csv data</label>
+                            <textarea type="text" wrap="soft" name="data" rows="12" class="form-control" id="csvdata" placeholder="add csv data here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-default">Submit</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <!-- <button type="button" class="btn btn-primary">Submit</button> -->
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+
+    <div class="modal fade" id="chart_form">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Chart Form</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="myform" class="form" role="form" action="api/csv_fixed_data">
+                        <div class="form-group">
+                            <label class="sr-only" for="Longitude">X-Axis</label>
+                            <select id="xaxis_selector" class="form-control">
+                            </select>
+                            <button type="button" class="btn btn-default" id="generate">Generate Chart</button>
+                        </div>
+                    </form>
+                    <div id="chart_container" style="display:none;">
+                        <div id="y_axis"></div>
+                        <div id="chart"></div>
+                        <div id="legend"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <!-- <button type="button" class="btn btn-primary">Submit</button> -->
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sly/sly.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='raphael/raphael.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='twentytwenty/js/jquery.event.move.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='twentytwenty/js/jquery.twentytwenty.js') }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='chart2/d3.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='chart2/d3.layout.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='chart2/rickshaw.min.js') }}"></script>
+
+    <script src="http://d23cj0cdvyoxg0.cloudfront.net/xivelyjs-1.0.4.min.js"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/jquery.fancybox.pack.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-buttons.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-media.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-thumbs.js')}}"></script>
+    <script type="text/javascript">
+    var graph;
+    $(document).ready(function() {
+        var chart_data_wrapper = function() {
+            var self = this;
+            self.parsed_json = undefined;
+            self.raw_data = undefined;
+            self.headers = undefined;
+        }
+
+        var chart_data = new chart_data_wrapper();
+
+
+
+        var del_form_col = function(col_id, form_csv_class) {
+            //
+            $(form_csv_class)
+        }
+        var add_form_col = function(col_id, form_csv_class) {
+            var div_form_group = $('<div>').addClass('form-group').attr('id', col_id);
+            // minus = $('<span>').addClass('glyphicon glyphicon-minus-sign');
+            // div_form_group.append($('<label>').append(minus).addClass('col-sm-2 control-label').attr('for',col_id).attr('id','label_'+col_id).text(minus.html()));
+            label = $('<label for="' + col_id + '" class="col-sm-2 control-label"><span class="glyphicon glyphicon-minus-sign"></span></label>');
+            label.click(function() {
+                del_form_col($(this).attr('for'), form_csv_class);
+            });
+
+            div_form_group.append(label);
+            div_form_group.append($('<div>').addClass('col-sm-10').append($('<input>').attr('name', 'COL' + col_id).addClass('form-control').attr('type', 'text').attr('id', col_id).attr('placeholder', 'Header#' + col_id)));
+
+
+            // div_form_group.append(minus);
+
+
+            // div_form_group.find('label')[0].click(del_form_col(minus.attr('id'),form_csv_class));
+
+            $(form_csv_class).append(div_form_group);
+
+            // minus = div_form_group.find('span');
+            // minus.click(del_form_col(minus.attr('id'),form_csv_class));
+
+
+        }
+
+
+
+        // <div class="form-group">
+        //     <label for="exampleInputEmail1">Email address</label>
+        //     <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Enter email">
+        // </div>
+
+        $('#generate').click(function() {
+
+            // {name: "Northeast",
+            //  data: [ { x: -1893456000, y: 25868573 }, { x: -1577923200, y: 29662053 }, { x: -1262304000, y: 34427091 }, { x: -946771200, y: 35976777 }, { x: -631152000, y: 39477986 }, { x: -315619200, y: 44677819 }, { x: 0, y: 49040703 }, { x: 315532800, y: 49135283 }, { x: 631152000, y: 50809229 }, { x: 946684800, y: 53594378 }, { x: 1262304000, y: 55317240 } ],
+            // color: palette.color()
+            // },
+            var palette = new Rickshaw.Color.Palette();
+
+            var series = [];
+
+
+            xaxis = $('select').val();
+
+
+
+            for (var j = 0; j < chart_data.headers.length; j++) {
+                actual_header = chart_data.headers[j];
+
+                name = actual_header;
+                data = [];
+                // color = '';
+
+                for (var i = 0; i < chart_data.parsed_json.length; i++) {
+                    actual_chunk = chart_data.parsed_json[i];
+
+                    data.push({
+                        x: parseFloat(actual_chunk[xaxis]),
+                        // y: actual_chunk[actual_header] == '-999' ? parseFloat(actual_chunk[actual_header]) : null
+                        y: parseFloat(actual_chunk[actual_header])
+                    });
+                };
+
+                series.push({
+                    name: name,
+                    data: data,
+                    color: palette.color()
+                });
+
+
+
+            };
+
+            graph = new Rickshaw.Graph({
+                element: document.querySelector("#chart"),
+                width: 540,
+                height: 240,
+                renderer: 'line',
+                series: series
+            });
+
+            var legend = new Rickshaw.Graph.Legend({
+                graph: graph,
+                element: document.querySelector('#legend')
+            });
+
+            var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
+                graph: graph,
+                legend: legend
+            });
+
+
+            var highlighter = new Rickshaw.Graph.Behavior.Series.Highlight({
+                graph: graph,
+                legend: legend
+            });
+
+            // new Rickshaw.Graph.HoverDetail({
+            //     graph: graph
+            // });
+
+            var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+                graph: graph,
+                xFormatter: function(x) { return x +' ('+ xaxis +')'},
+                yFormatter: function(y) { return y }
+            } );
+
+            var xAxis = new Rickshaw.Graph.Axis.X( {
+                graph: graph
+            } );
+
+            var yAxis = new Rickshaw.Graph.Axis.Y({
+                graph: graph,
+                tickFormat: Rickshaw.Fixtures.Number.formatKMBT
+            });
+
+
+
+            // var x_axis = new Rickshaw.Graph.Axis.X({
+            //     graph: graph,
+            //     // ticksTreatment: 'glow',
+            //     orientation: 'bottom',
+            //     tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
+            //     element: document.getElementById('x_axis')
+            // });
+
+            // var y_axis = new Rickshaw.Graph.Axis.Y({
+            //     graph: graph,
+            //     orientation: 'left',
+            //     tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
+            //     element: document.getElementById('y_axis')
+            // });
+
+            //$('#myform').hide();            
+
+            graph.render();
+
+            $('#chart_container').show();
+
+            delete chart_data;
+
+
+        });
+
+        $('form').submit(function(e) {
+            // alert('form is submitting..');
+            var formObj = $(this);
+            var formURL = formObj.attr("action");
+            // var formData = $('#myform').serializeArray();
+            var formData = $('#myform').serialize();
+
+            $.ajax({
+                url: formURL,
+                type: 'GET',
+                data: formData,
+                // mimeType:"multipart/form-data",
+                contentType: false,
+                cache: false,
+                processData: false,
+                success: function(data, textStatus, jqXHR) {
+                    // alert('s');
+                    chart_data.raw_data = data;
+                    chart_data.parsed_json = JSON.parse(data);
+
+                    first = chart_data.parsed_json[0];
+
+                    var keys = [];
+                    for (var key in first) {
+                        if (first.hasOwnProperty(key)) {
+                            //first.key;
+                            if (key)
+                                keys.push(key);
+                        }
+                    }
+                    chart_data.headers = keys;
+
+                    $('#xaxis_selector').empty();
+
+                    $.each(keys, function(key, value) {
+                        $('#xaxis_selector')
+                            .append($("<option></option>")
+                                .attr("value", value)
+                                .text(value));
+                    });
+
+
+
+
+                    $('#csv_form').modal('hide');
+                    $('#chart_form').modal('show');
+
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('e');
+                }
+            });
+
+
+            e.preventDefault();
+        });
+
+        $('#form_submit').click(function() {
+            $('form').submit();
+        });
+
+    });
+    </script>
+</body>
+
+</html>

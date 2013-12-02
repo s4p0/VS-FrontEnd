@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ForestWatchers.net</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" media="screen">
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+
+    <link href="{{ url_for('static', filename='twentytwenty/css/twentytwenty.css') }}" rel="stylesheet" type="text/css">
+
+    </meta>
+    <title>Maps...</title>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="256" height="256">
+        Fallback content, in case the browser does not support Canvas.
+    </canvas>
+    <div id="map" style="height: 512px; width: 512px; display:none;"></div>
+
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sly/sly.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='raphael/raphael.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='twentytwenty/js/jquery.event.move.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='twentytwenty/js/jquery.twentytwenty.js') }}"></script>
+    <script type="text/javascript">
+    var mapserv_url = 'http://' + location.hostname + "/cgi-bin/mapserv";
+    var modis = new OpenLayers.Layer.WMS("Modis (250m) - 2013-08-04",
+        mapserv_url, {
+            map: "/var/www/local.map",
+            layers: "2013216",
+            transparent: "true",
+            units: 'meters'
+        }, {
+            visibility: true,
+            isBaseLayer: false,
+            singleTile: false,
+            opacity: 0.8,
+            // maxExtent: new OpenLayers.Bounds(minx,miny,maxx,maxy),
+            // getMaxExtent: new OpenLayers.Bounds(-58.5446999999999989, -13.1942000000000004, -49.4528999999999996, 5.6916000000000002),
+            maxResolution: "auto"
+        });
+    var getTileCentered = function(feature, layer, resolution) {
+        ln = new OpenLayers.LonLat(feature.geometry.x, feature.geometry.y);
+        size = layer.tileSize.w;
+        delta = size * resolution;
+        bnd = new OpenLayers.Bounds(ln.lon - delta, ln.lat - delta, ln.lon + delta, ln.lat + delta);
+        return layer.getURL(bnd);
+    }
+    var getTileCenteredByLonLat = function(lonlat, layer, resolution) {
+        // ln = new OpenLayers.LonLat(feature.geometry.x, feature.geometry.y);
+        ln = lonlat;
+        size = layer.tileSize.w;
+        delta = size * resolution;
+        bnd = new OpenLayers.Bounds(ln.lon - delta, ln.lat - delta, ln.lon + delta, ln.lat + delta);
+        return layer.getURL(bnd);
+    };
+    $(document).ready(function() {
+        // -54.9991445337003
+        // -3.15356777049895
+        ln = new OpenLayers.LonLat(-54.9991445337003, -3.15356777049895);
+
+        map = new OpenLayers.Map('map', {
+            allOverlays: true
+        });
+        map.addLayer(modis);
+        // map.addControl(new OpenLayers.Control.LayerSwitcher())
+        map.setCenter(ln, 10);
+
+        zoom = 13;
+        res = modis.getResolutionForZoom(zoom);
+        // var img_url = getTileCenteredByLonLat(ln, modis, res);
+        var img_url = 'static/mapserv.png';
+
+
+
+        // Get the canvas element.
+        var elem = document.getElementById('myCanvas');
+        if (!elem || !elem.getContext) {
+            return;
+        }
+
+        // Get the canvas 2d context.
+        var context = elem.getContext('2d');
+        if (!context || !context.getImageData || !context.putImageData || !context.drawImage) {
+            return;
+        }
+
+        // Create a new image.
+        var img = new Image();
+
+        // Once it's loaded draw the image on canvas and invert the colors.
+        img.addEventListener('load', function() {
+            var x = 0,
+                y = 0;
+
+            // Draw the image on canvas.
+            context.drawImage(this, x, y);
+
+            // Get the pixels.
+            var imgd = context.getImageData(x, y, this.width, this.height);
+            var pix = imgd.data;
+
+            // Loop over each pixel and invert the color.
+            for (var i = 0, n = pix.length; i < n; i += 4) {
+                // pix[i] = 255 - pix[i]; // red
+                // pix[i + 1] = 255 - pix[i + 1]; // green
+                // pix[i + 2] = 255 - pix[i + 2]; // blue
+                // // i+3 is alpha (the fourth element)
+
+                pix[i] = pix[i]; // red
+                pix[i + 1] = pix[i + 1]; // green
+                pix[i + 2] = pix[i + 2]; // blue
+                // // i+3 is alpha (the fourth element)
+            }
+
+            // Draw the ImageData object.
+            context.putImageData(imgd, x, y);
+        }, false);
+
+        img.src = img_url;
+
+
+    });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>sample2</title>
+		<meta name="author" content="Felipe Correa" />
+		<!-- Date: 2013-04-27 -->
+	</head>
+  <!-- <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}"> -->
+	<!-- <script type="text/javascript" src="../static/OpenLayers-2.12/lib/OpenLayers.js"/> -->
+  <!-- <script type="text/javascript" src="../static/dojo-release-1.8.3/dojo"/> -->
+
+  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="http://code.jquery.com/jquery-migrate-1.1.1.min.js"></script>
+  <script src="{{ url_for('static', filename='OpenLayers-2.12/lib/OpenLayers.js') }}"></script>
+  <script src="{{ url_for('static', filename='dojo/dojo.js') }}"></script>
+
+	<script type="text/javascript">
+  var map;
+  var wms;
+  var wktLayer;
+  function initMap(){
+    map = new OpenLayers.Map( 'map' );
+    wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",       
+                		"http://labs.metacarta.com/wms/vmap0", {
+                		 layers: 'basic', 
+                		 isBaseLayer: true
+           } );
+    map.addLayer(wms);
+    map.addControl(new OpenLayers.Control.LayerSwitcher());
+    map.setCenter(new OpenLayers.LonLat(0,0),2);
+
+    wktLayer = new OpenLayers.Layer.Vector("wktLayer");
+    map.addLayer(wktLayer);
+    }
+    function clearLayer(){
+      wktLayer.removeAllFeatures();
+    }
+
+    function addFeature(){
+      var text = $('textarea#wktText').val();
+      // var text = dijit.byId('wktText').get('value');
+      // var wkt = new OpenLayers.Format.WKT();
+      var wkt = new OpenLayers.Format.GeoJSON();
+      var features = wkt.read(text);
+      wktLayer.addFeatures(features);
+
+      var currentWkt = wkt.write(wktLayer.features);
+      dijit.byId('wktFeatures').set('value', currentWkt);
+    }
+  </script>
+  <style type="text/css">
+      #map {
+          width: 800px;
+          height: 800px;
+          border: 1px solid black;
+      }
+  </style>
+	<body onload="initMap()">
+		<!-- <div id="map" class="olMap"/> -->
+    <table style="width:100%; height: 90%">
+      <tr>
+        <td>
+          <div id="map" style="width:100%; height:100%"></div>
+        </td>
+        <td style="width: 30%; vertical-align: top;">
+          <p>Write the WKT describing features:</p>
+          <textarea id="wktText" dojoType="dijit.form.SimpleTextarea" rows="10" style="width: 100%"></textarea>
+          <button dojoType="dijit.form.Button" onClick="addFeature()">Add Feature</button>
+          <button dojoType="dijit.form.Button" onClick="clearLayer()">Clear Layer</button>
+        </td>
+      </tr>
+    </table>
+	</body>
+</html>
+

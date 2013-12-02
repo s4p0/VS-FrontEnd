@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8>
+    <title>ForestWatchers.net</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">{% block base_style %}
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+    <!-- <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.mobile.css') }}" rel="stylesheet" type="text/css"> -->
+
+    </meta>
+    <title>JS Bin</title>
+    <style type="text/css">
+    .popover {
+        max-width: 450px;
+    }
+    .slidee li img {
+        vertical-align: top;
+    }
+    .popover-title span {
+        display:block;
+        float: left;
+        width: 236px;
+    }
+    #map {
+        height: 516px;
+        /*max-height: 320px;*/
+    }
+    li .activate img {
+        opacity: 0.8;
+        transition: opacity .25s ease-in-out;
+        -moz-transition: opacity .25s ease-in-out;
+        -webkit-transition: opacity .25s ease-in-out;
+    }
+    .fade:hover {
+        opacity: 0.5;
+    }
+    .frame {
+        height: 120px;
+        line-height: 100px;
+        overflow: hidden;
+        width: 100%;
+        /*width: 1200px;*/
+    }
+    .frame ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-size: 30px;
+    }
+    .frame ul li {
+        float: left;
+        width: 120px;
+        /*height: 100%;*/
+        height: 100px;
+        /*margin: 5px 5px 0 0;*/
+        margin-top: 0px;
+        margin-bottom: 0px;
+        margin-left: 2.5px;
+        margin-right: 2.5px;
+        /*margin-left: 5px;*/
+        /*padding: 0;*/
+        /*padding-left: 5px;
+        padding-right: 5px;*/
+        background: #333;
+        color: #ddd;
+        text-align: center;
+        cursor: pointer;
+    }
+    .frame ul li.active {
+        color: #fff;
+        background: #a03232;
+    }
+    .scrollbar {
+        margin: 0 0 1em 0;
+        height: 5px;
+        background: #ccc;
+        line-height: 0;
+    }
+    .scrollbar .handle {
+        width: 100px;
+        height: 100%;
+        background: #292a33;
+        cursor: pointer;
+    }
+    .scrollbar .handle .mousearea {
+        position: absolute;
+        top: -9px;
+        left: 0;
+        width: 100%;
+        height: 20px;
+    }
+    </style>
+    {% endblock %}
+</head>
+
+<body>
+    <div id="map"></div>
+    <div class="scrollbar">
+        <div class="handle">
+            <div class="mousearea"></div>
+        </div>
+    </div>
+    <div id="frame" class="frame">
+        <ul class="slidee">
+        </ul>
+    </div>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sly/sly.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/Popover.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/TwitterBootstrap.js') }}"></script>
+    <script type="text/javascript">
+    var sly;
+    var mapObj;
+    // var map;
+    var selectCtrl;
+    var mapserv_url = 'http://' + location.hostname + "/cgi-bin/mapserv";
+    var icon_path = "{{ url_for('static', filename='icons') }}";
+    var SHADOW_Z_INDEX = -30;
+    var MARKER_Z_INDEX = -20;
+    
+
+    var feature_cache = function() {
+        this.features = {};
+        this.AddFeature = function(pointId, feature) {
+            if (this.features[pointId] == undefined) {
+                // feature[pointId] = feature;
+                this.features[pointId] = feature;
+            }
+            return this.features[pointId];
+        }
+        this.hasFeature = function(pointId) {
+            return this.features[pointId];
+        }
+    }
+
+    var getCardinal = function(value) {
+        var bearings = ["NE", "E", "SE", "S", "SW", "W", "NW", "N"];
+
+        var index = value - 22.5;
+        if (index < 0)
+            index += 360;
+        index = parseInt(index / 45);
+
+        return (bearings[index]);
+    }
+
+    var closePopover = function(evt) {
+        // this.destroy();
+        //this.hide();    
+        pop = $(evt.target).parents('.popover');
+        pop.remove();
+    };
+
+    var photofeat_cache = new feature_cache();
+
+    OpenLayers.Format.VolunteerSensingPictures = OpenLayers.Class(OpenLayers.Format, {
+        read: function(obj) {
+
+            gj = JSON.parse(obj);
+            var features = [];
+
+            for (var i = 0; i < gj.result.length; i++) {
+                pic = gj.result[i];
+                var feature = undefined;
+
+                // feature = photofeat_cache.hasFeature(pic.picture.id);
+                if (feature == undefined) {
+                    pic.angle = pic.picture.magneticHeading;
+                    pic.cardinal = getCardinal(pic.picture.magneticHeading);
+                    pic.label = 'cb';
+
+                    geo = pic.picture.geom;
+                    lonlat = new OpenLayers.LonLat(geo.coordinates[0], geo.coordinates[1]);
+                    pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+
+                    feature = new OpenLayers.Feature.Vector(pointGeometry, pic);
+                    // photofeat_cache.AddFeature(pic.picture.id, feature.clone());
+                }
+                features.push(feature);
+            };
+            return features;
+        }
+    });
+
+
+
+    var maps = function(element) {
+        var self = this;
+
+        self.firstAccess = true;
+        self.map;
+
+        self.elem = element;
+
+        self.layers = {
+            photos: new OpenLayers.Layer.Vector("Photos", {
+                eventListeners: {
+                    "featuresadded": function(e) {
+                        sly.destroy();
+                        $('.slidee').empty();
+                        mapObj.firstAccess = true;
+
+                        $.each(e.features, function(key, feat) {
+                            var picture = feat.attributes.picture;
+                            img = '/static/uploads/thumb_120/' + picture.fileName;
+
+                            var li = $('<li/>').attr("data-featid", feat.id)
+                                .append($('<img/>')
+                                    .attr('src', img)
+                                    .addClass('img-responsive')
+                            )
+                            sly.add(li);
+                            $.data(li[0], 'feat', feat);
+                            // v = $('.active')
+                            // $(v[0]).data('photo')
+                        });
+
+                        var idSelected = $('.olControlSelectFeature').attr('id');
+                        var li = $('.slidee').find("[data-featid='" + idSelected + "']");
+                        if (li) {
+                            var idx = sly.getIndex(li);
+                            sly.slideTo(idx);
+                        }
+                        sly.init();
+                    },
+                    'featuresremoved': function(e) {
+                        sly.destroy();
+                        $.each(e.features, function(key, feat) {
+                            // var li = $('#'+feat.id)
+                            var li = $('.slidee').find("[data-featid='" + feat.id + "']");
+                            $(li).removeData();
+
+                        });
+                    },
+                    'refresh': function(e) {
+                        var a = 0;
+                    }
+                },
+                projection: "EPSG:4326",
+                strategies: [new OpenLayers.Strategy.BBOX({
+                    resFactor: 3,
+                    ratio: 1
+                })],
+                protocol: new OpenLayers.Protocol.HTTP({
+                    url: "/api/pictures",
+                    params: {},
+                    callbackKey: 'jsoncallback',
+                    format: new OpenLayers.Format.VolunteerSensingPictures()
+                }),
+                // , styleMap: styleMap
+                // renderers: ["Canvas", "SVG", "VML"]
+                styleMap: new OpenLayers.StyleMap({
+                    'default': OpenLayers.Util.applyDefaults({
+                        graphic: true,
+                        graphicWidth: 32,
+                        graphicHeight: 37,
+                        externalGraphic: icon_path + '/' + 'blue_photo_a.png',
+
+                        // backgroundWidth: 63,
+                        // backgroundHeight: 37,
+                        // backgroundGraphic: icon_path + '/' + 'shadow.png',
+                        // backgroundXOffset: -8,
+                        // backgroundYOffset: -12,
+
+                        graphicZIndex: MARKER_Z_INDEX,
+                        // backgroundGraphicZIndex: SHADOW_Z_INDEX,
+
+                        graphicOpacity: 0.8,
+                    }, OpenLayers.Feature.Vector.style["default"]),
+                    'select': OpenLayers.Util.applyDefaults({
+
+                            graphic: true,
+                            graphicOpacity: 1.0,
+                            graphicZIndex: 100000000,
+
+                            graphicWidth: 32,
+                            graphicHeight: 37,
+                            externalGraphic: icon_path + '/' + 'arrow.png',
+                            
+                            backgroundGraphic: '',
+
+                            rotation: '${angle}',
+                            label: '${cardinal}',
+                            // labelAlign: 'ct',
+                            // graphicXOffset: 15, 
+                            // graphicYOffset: 10,
+
+                            fontColor: "black",
+                            fontSize: "20px",
+                            fontFamily: "Courier New, monospace",
+                            // fontWeight: "bold",
+                            labelAlign: "cb",
+                            // labelXOffset: 20,
+                            labelYOffset: -40,
+                            labelOutlineColor: "white",
+                            labelOutlineWidth: 3,
+                            pointerEvents: "visiblePainted"
+                        },
+                        OpenLayers.Feature.Vector.style["default"]
+                    )
+                }),
+            }),
+            Modis: new OpenLayers.Layer.MapServer("Modis (250m) - 2013-08-04",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "2013216",
+                    // transparent: "true",
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }),
+            States: new OpenLayers.Layer.WMS("Brazilian States",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "estados",
+                    transparent: "true",
+                    opacity: 1.0,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }),
+            ANNClassification: new OpenLayers.Layer.WMS("ANN Classification",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "ANNClassified",
+                    transparent: "true",
+                    opacity: 1.0,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 1.0
+                }),
+            ANNProbability: new OpenLayers.Layer.WMS("ANN Probability",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "ANNProbability",
+                    transparent: "true",
+                    opacity: 1.0,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 1.0
+                }),
+            Hydrography: new OpenLayers.Layer.WMS("Brazilian Hydrography",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "hidro_prodes",
+                    transparent: "true",
+                    opacity: 0.5,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 0.5
+                }),
+            ConservationUnit: new OpenLayers.Layer.WMS("Conservation Unit",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "unidadeconservacao",
+                    transparent: "true",
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 0.5
+                }),
+            IndigenousTerritory: new OpenLayers.Layer.WMS("Indigenous Territory",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "terraindigena",
+                    transparent: "true",
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 0.5
+                }),
+            otherBaseLayer: new OpenLayers.Layer.MapServer('??? (2.5M) 2009-2011',
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: ['2009_2.5', '2011_2.5'],
+                    transparent: "false",
+                    format: "image/png",
+                    srs: "EPSG:4326"
+                })
+        }
+
+        self.featureSelector = new OpenLayers.Control.SelectFeature(self.layers['photos'], {
+            //toggle: true,
+            // clickout: true,
+            onSelect: function(feature) {
+                var picture = feature.attributes.picture;
+
+                // function(id, lonlat, contentSize, contentHTML, anchor, closeBox,closeBoxCallback)
+                var size = new OpenLayers.Size(300,400);
+
+                // initialize:function(id, lonlat, contentHTML, title, closeBoxCallback) {
+
+                // var popup = new OpenLayers.Popup.TwitterBootstrap(
+                var popup = new OpenLayers.Popup.Popover(
+                    null,
+                    OpenLayers.LonLat.fromString(feature.geometry.toShortString()),
+                    
+                    // "<ul><li>aaa</li></ul>",
+                    // '<div class="container"><img src="/static/uploads/thumb_400/' + picture.fileName + '" class="img-responsive"></div>',
+                    '<div class="container"><img class="img-responsive" src="/static/uploads/thumb_400/'+picture.fileName+'" ></div>',
+                    '',
+                    closePopover
+                );
+
+                feature.popup = popup;
+                mapObj.map.addPopup(popup);
+                // $('.popover').removeClass('fade');
+
+                if(closePopover){
+                    pop = document.getElementById(popup.id);
+                    $(pop).find('button').click(closePopover);
+                }
+                // $('.popover').css('height', '')
+            },
+            onUnselect: function(feature) {
+                // alert(feature.id + ' unselected');
+                // mapObj.map.removePopup(feature.popup);
+                // feature.popup.destroy();
+                // feature.popup = null;
+                // $('.popover').remove();
+            }
+        });
+
+        self.init = function() {
+            // new map to elem
+            this.map = new OpenLayers.Map(this.elem);
+            // add all base layers
+            for (layer in this.layers) {
+                this.map.addLayer(this.layers[layer]);
+            }
+            // define zoom levels
+            this.map.maxZoom = 30;
+            this.map.numZoomLevels = 30;
+            // add controls
+            this.map.addControl(new OpenLayers.Control.LayerSwitcher());
+            this.map.addControl(new OpenLayers.Control.MousePosition());
+
+            // set startup position
+            this.map.setCenter(new OpenLayers.LonLat(-54.89, -3), 12);
+
+            this.map.addControl(this.featureSelector);
+            this.featureSelector.activate();
+
+            return this.map;
+        }
+    }
+
+    jQuery(function($) {
+
+        var options = {
+            horizontal: 1,
+            itemNav: 'centered',
+            scrollBy: 1,
+            dragging: 1,
+            speed: 1,
+            scrollBar: $('.scrollbar'),
+            mouseDragging: 1,
+            activateOn: 'click',
+            // activateOn: 'mouseenter',
+            // startAt: 2,
+            dragHandle: 1,
+            smart: 0,
+            // activeClass: 'olControlSelectFeature'
+        };
+
+        sly = new Sly('#frame', options);
+        sly.on('active', function(eventName, itemIndex) {
+            if (!mapObj.firstAccess) {
+                var li = sly.getPos(itemIndex).el;
+                feat = $(li).data('feat');
+                // ctrlKey.select(feat);
+                mapObj.featureSelector.unselectAll();
+                mapObj.featureSelector.select(feat);
+            } else {
+                mapObj.firstAccess = false;
+            }
+
+        });
+
+        sly.init();
+
+        mapObj = new maps('map');
+        mapObj.init();
+
+    });
+    </script>
+</body>
+
+</html>

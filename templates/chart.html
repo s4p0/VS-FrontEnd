@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block customcss %}
+{% endblock %}	
+
+
+{% block body%}
+
+<div class="span12">
+  <p>aaa</p>
+  
+  <div class="input-prepend input-append">
+    <span class="add-on">xively.com/feeds/</span>
+    <input class="span2 input-large" id="appendedPrependedInput" type="text">
+    <button class="btn" type="button">Go!</button>
+  </div>
+</div>
+
+  <div  id="xively-container" class="span4"></div>
+
+  <div class="row-fluid">
+  <div class="span12">
+    <canvas id="chart" width="600" height="400"></canvas>
+  </div>
+</div>
+</div>
+
+{% endblock %}
+
+{% block lastbody%}
+{% endblock %}
+
+{% block footer %}
+{% endblock %}
+
+{% block customjs %}
+    <script>
+      var icon_path = "{{ url_for('static', filename='icons2') }}"
+      var uploads_path = "{{ url_for('static', filename='uploads') }}"
+    </script>
+
+    <script src="http://d23cj0cdvyoxg0.cloudfront.net/xivelyjs-1.0.4.min.js"></script>  
+    <script type="text/javascript" src="{{ url_for('static', filename='chart/Chart.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='chart.js') }}"></script>
+{% endblock %}

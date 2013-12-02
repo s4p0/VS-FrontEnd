@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>Example {{ example_number }}</title>
+		<meta name="author" content="Felipe Correa" />
+	</head>
+	<style type="text/css">
+		#map {
+			width: 900px;
+			height: 500px;
+			border: 1px solid black;
+		}
+	</style>
+	<body>
+		<center>
+		<h1> Example {{ example_number }} </h1>
+		<div id="map" class="olMap"></div>
+		<div id="form-container">
+			
+		</div>
+		</center>
+	</body>
+	<script src="{{ url_for('static', filename='OpenLayers-2.12/lib/OpenLayers.js') }}"></script>
+	<script src="{{ url_for('static', filename='dojo/dojo.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='.') }}examples_js/example{{ example_number }}.js"></script>
+</html>

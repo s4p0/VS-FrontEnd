@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>sample2</title>
+		<meta name="author" content="Felipe Correa" />
+		<!-- Date: 2013-04-27 -->
+	</head>
+  <!-- <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}"> -->
+	<!-- <script type="text/javascript" src="../static/OpenLayers-2.12/lib/OpenLayers.js"/> -->
+  <!-- <script type="text/javascript" src="../static/dojo-release-1.8.3/dojo"/> -->
+
+  <script src="{{ url_for('static', filename='OpenLayers-2.12/lib/OpenLayers.js') }}"></script>
+  <script src="{{ url_for('static', filename='dojo/dojo.js') }}"></script>
+
+	<script type="text/javascript">
+  var map, wms, pointLayer;
+  var icon_path = "{{ url_for('static', filename='icons') }}"
+  var icons = ["alligator.png","birds-2.png","deer.png","elephants.png","mosquito.png","rodent.png","snakes.png","turtle-2.png","zoo.png","animal-shelter-export.png","butterfly-2.png","dolphins.png","frog-2.png","penguin-2.png","seals.png","spider.png","veterinary.png","ant-export.png","chicken-2.png","duck-export.png","lobster-export.png","pets.png","shark-export.png","symbol_blank.png","whale-2.png","bats.png","cow-export.png","eggs.png","monkey-export.png","pig.png","snail.png","tiger-2.png","wildlifecrossing.png"];
+  function init(){
+      map = new OpenLayers.Map( 'map' );
+      layer = new OpenLayers.Layer.WMS( "OpenLayers WMS",       
+        "http://labs.metacarta.com/wms/vmap0", {
+         layers: 'basic', 
+         isBaseLayer: true
+       } );
+      map.addLayer(layer);
+      map.zoomToMaxExtent();
+      map.addControl(new OpenLayers.Control.LayerSwitcher());
+      pointLayer = new OpenLayers.Layer.Vector('features');
+    map.setCenter(new OpenLayers.LonLat(0,0),2);
+    map.addLayer(pointLayer);
+    var pointFeatures = [];
+  for (var i = 0; i < 150; i++) {
+    var icon = Math.floor(Math.random() * icons.length);
+    var px = Math.random() * 360 - 180;
+    var py = Math.random() * 170 - 85;
+    var lonlat = new OpenLayers.LonLat(px, py);
+    var pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+    var pointFeature = new OpenLayers.Feature.Vector(pointGeometry, null, {
+      pointRadius: 16,
+      fillOpacity: 0.7,
+       externalGraphic: icon_path + '/' + icons[icon]
+    });
+    pointFeatures.push(pointFeature);
+  };
+  pointLayer.addFeatures(pointFeatures);
+  var selectControl = new OpenLayers.Control.SelectFeature(pointLayer,
+  {
+    hover: true,
+    onSelect: function (feature){
+      var layer = feature.layer;
+      feature.style.fillOpacity = 1;
+      feature.style.pointRadius = 20;
+      layer.drawFeature(feature);
+
+      var content = "<div><strong>Feature:</strong><br/>" + feature.id + "<br/><br/><strong>Location:</strong><br/>" + feature.geometry + "</div>";
+
+      var popup = new OpenLayers.Popup.FramedCloud(
+        feature.id + "_popup", 
+        feature.geometry.getBounds().getCenterLonLat(),
+        new OpenLayers.Size(250,100),
+        content,
+        null);
+        feature.popup = popup;
+        map.addPopup(popup);
+    },
+    onUnselect: function(feature){
+      var layer = feature.layer;
+      feature.style.fillOpacity = 0.7;
+      feature.style.pointRadius = 16;
+      layer.drawFeature(feature);
+      map.removePopup(feature.popup);
+    }
+  })
+  map.addControl(selectControl);
+  selectControl.activate();
+  }
+  </script>
+    <style type="text/css">
+      #map {
+          width: 800px;
+          height: 800px;
+          border: 1px solid black;
+      }
+  </style>
+	<body onload="init()">
+    <div id="map" class="olMap"/>
+  </body>
+</html>
+
+<!-- ["alligator.png","birds-2.png","deer.png","elephants.png","mosquito.png","rodent.png","snakes.png","turtle-2.png","zoo.png","animal-shelter-export.png","butterfly-2.png","dolphins.png","frog-2.png","penguin-2.png","seals.png","spider.png","veterinary.png","ant-export.png","chicken-2.png","duck-export.png","lobster-export.png","pets.png","shark-export.png","symbol_blank.png","whale-2.png","bats.png","cow-export.png","eggs.png","monkey-export.png","pig.png","snail.png","tiger-2.png","wildlifecrossing.png"] -->

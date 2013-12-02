@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8>
+    <title>ForestWatchers.net</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">{% block base_style %}
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+
+    </meta>
+    <title>JS Bin</title>
+    <style type="text/css">
+    #map {
+        /*height: 100%;*/
+        height: 600px;
+        width: 100%;
+    }
+    .popover-title span {
+        display:block;
+        float: left;
+        width: 236px;
+    }
+    </style>
+
+    {% endblock %}
+</head>
+
+<body>
+    <div class="row">
+        <div class="col-md-9">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sly/sly.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/Popover.js') }}"></script>
+    <script type="text/javascript">
+    var sly;
+    var mapObj;
+    // var map;
+    var selectCtrl;
+
+    var icon_path = "{{ url_for('static', filename='icons') }}";
+    var mapserv_url = 'http://' + location.hostname + "/cgi-bin/mapserv";
+
+
+
+    var SHADOW_Z_INDEX = 5;
+    var MARKER_Z_INDEX = 100;
+
+    function MyMap(div_id) {
+        this.initialization(div_id);
+    }
+
+    var getCardinal = function(value) {
+        var bearings = ["NE", "E", "SE", "S", "SW", "W", "NW", "N"];
+
+        var index = value - 22.5;
+        if (index < 0)
+            index += 360;
+        index = parseInt(index / 45);
+
+        return (bearings[index]);
+    }
+
+    OpenLayers.Format.VolunteerSensingPictures = OpenLayers.Class(OpenLayers.Format, {
+        read: function(obj) {
+
+            gj = JSON.parse(obj);
+            var features = [];
+
+            for (var i = 0; i < gj.result.length; i++) {
+                pic = gj.result[i];
+                var feature = undefined;
+
+                // feature = photofeat_cache.hasFeature(pic.picture.id);
+                if (feature == undefined) {
+                    pic.angle = pic.picture.magneticHeading;
+                    pic.cardinal = getCardinal(pic.picture.magneticHeading);
+                    pic.label = 'cb';
+
+                    geo = pic.picture.geom;
+                    lonlat = new OpenLayers.LonLat(geo.coordinates[0], geo.coordinates[1]);
+                    pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+
+                    feature = new OpenLayers.Feature.Vector(pointGeometry, pic);
+                    // photofeat_cache.AddFeature(pic.picture.id, feature.clone());
+                }
+                features.push(feature);
+            };
+            return features;
+        }
+    });
+
+    MyMap.prototype.layers = {
+            Modis: new OpenLayers.Layer.MapServer("Modis (250m) - 2013-08-04",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "2013216",
+                    // transparent: "true",
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }),
+            States: new OpenLayers.Layer.WMS("Brazilian States",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "estados",
+                    transparent: "true",
+                    opacity: 1.0,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }),
+            ANNClassification: new OpenLayers.Layer.WMS("ANN Classification",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "ANNClassified",
+                    transparent: "true",
+                    opacity: 1.0,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 1.0
+                }),
+            ANNProbability: new OpenLayers.Layer.WMS("ANN Probability",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "ANNProbability",
+                    transparent: "true",
+                    opacity: 1.0,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 1.0
+                }),
+            Hydrography: new OpenLayers.Layer.WMS("Brazilian Hydrography",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "hidro_prodes",
+                    transparent: "true",
+                    opacity: 0.5,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 0.5
+                }),
+            ConservationUnit: new OpenLayers.Layer.WMS("Conservation Unit",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "unidadeconservacao",
+                    transparent: "true",
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 0.5
+                }),
+            IndigenousTerritory: new OpenLayers.Layer.WMS("Indigenous Territory",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "terraindigena",
+                    transparent: "true",
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 0.5
+                }),
+            otherBaseLayer: new OpenLayers.Layer.MapServer('??? (2.5M) 2009-2011',
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: ['2009_2.5', '2011_2.5'],
+                    transparent: "false",
+                    format: "image/png",
+                    srs: "EPSG:4326"
+                }),
+            Photos: new OpenLayers.Layer.Vector("Photos", {
+                eventListeners: {
+                    "featuresadded": function(e) {},
+                    'featuresremoved': function(e) {}
+                },
+                projection: "EPSG:4326",
+                strategies: [new OpenLayers.Strategy.BBOX({
+                    resFactor: 0,
+                    ratio: 1
+                })],
+                protocol: new OpenLayers.Protocol.HTTP({
+                    url: "/api/pictures",
+                    params: {},
+                    callbackKey: 'jsoncallback',
+                    format: new OpenLayers.Format.VolunteerSensingPictures(),
+                }),
+                rendererOptions: {
+                    yOrdering: true
+                },
+                styleMap: new OpenLayers.StyleMap({
+                    'default': OpenLayers.Util.applyDefaults({
+                        graphic: true,
+                        graphicWidth: 32,
+                        graphicHeight: 37,
+                        externalGraphic: icon_path + '/' + 'blue_photo_a.png',
+                        backgroundGraphic: icon_path + '/' + 'shadow.png',
+
+                        graphicZIndex: MARKER_Z_INDEX,
+                        backgroundGraphicZIndex: SHADOW_Z_INDEX,
+
+                        backgroundXOffset: -2,
+                        backgroundYOffset: -16,
+
+                        graphicOpacity: 0.6,
+                    }, OpenLayers.Feature.Vector.style["default"]),
+                    'select': OpenLayers.Util.applyDefaults({
+                        graphicOpacity: 1.0,
+                        graphicZIndex: 100000000,
+                        pointerEvents: "visiblePainted"
+                    }, OpenLayers.Feature.Vector.style["default"])
+                }),
+            }),
+        }
+
+        MyMap.prototype.div_map = undefined;
+        MyMap.prototype.mapObj = undefined;
+        
+        MyMap.prototype.popupClose = function(evt){
+            $(evt.target).parents('.popover').remove();
+        }
+        
+        MyMap.prototype.initialization = function(div) {
+            FeatureSelector = new OpenLayers.Control.SelectFeature([this.layers.Photos], {
+                toggle: true,
+                multiple: true,
+                // box: true,
+                clickout: false,
+                hover: false,
+                onSelect: function(feat) {
+
+                    var popup = new OpenLayers.Popup.Popover(
+                        feat.id,
+                        OpenLayers.LonLat.fromString(feat.geometry.toShortString()),
+                        // new OpenLayers.LonLat(feat.geometry.x,feat.geometry.y),
+                        "The popup content",
+                        "",
+                        MyMap.prototype.popupClose
+                    );
+                    feat.popup = popup;
+                    this.map.addPopup(feat.popup);
+                },
+                onUnselect: function(feat) {
+                    feat.popup.destroy();
+                }
+            });
+
+            this.div_map = div;
+            this.map = new OpenLayers.Map(this.div_map, this.controls);
+            MyMap.prototype.mapObj = this.map;
+            for (layer in this.layers) {
+                this.map.addLayer(this.layers[layer]);
+            }
+
+            lyr = this.layers.ANNProbability.clone();
+            lyr.isBaseLayer = true;
+
+            // create an overview map control with the default options
+            var overview1 = new OpenLayers.Control.OverviewMap({
+                maximized: true,
+                maximizeTitle: 'Show the overview map',
+                minimizeTitle: 'Hide the overview map',
+                layers: [lyr],
+                minRatio: 16,
+                maxRatio: 64,
+                numZoomLevels: 20,
+            });
+            this.map.addControl(overview1);
+            this.map.addControl(new OpenLayers.Control.LayerSwitcher());
+            this.map.addControl(new OpenLayers.Control.MousePosition());
+
+            // // set startup position
+            this.map.setCenter(new OpenLayers.LonLat(-54.89, -3), 12);
+
+            this.map.addControl(FeatureSelector);
+            FeatureSelector.activate();
+            // this.map.addControl(new OpenLayers.Control.OverviewMap());
+
+        }
+    
+
+    // var mymap = new MyMap('map');
+    // mymap.initialization();
+
+    var resizeMap = function(div_map) {
+        map_id = '#' + div_map;
+        var winWidth = $(window).width();
+        var winHeight = $(window).height();
+
+        // var mapWidth = $('.container').width();
+        // $('[data-role=page]').height()        
+
+        var mapWidth = $('.panel-body').width();
+        var mapHeight = mapWidth / winWidth * winHeight;
+        if (mapHeight != 0)
+            $(map_id).css('height', mapHeight);
+
+    };
+
+    jQuery(document).ready(function() {
+        mapid = 'map';
+        resizeMap(mapid);
+
+        var mymap = new MyMap(mapid);
+
+        // $(window).resize(resizeMap(mymap.div_map));
+
+    });
+    </script>
+</body>
+
+</html>

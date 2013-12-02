@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ForestWatchers.net</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">{% block base_style %}
+    <!-- Latest compiled and minified CSS -->
+    <!-- <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.css" /> -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" media="screen">
+    <!-- Optional theme -->
+    <!-- <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css"> -->
+    <!-- <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.custom.css') }}" rel="stylesheet" type="text/css"> -->
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- <link href="{{ url_for('static', filename='twentytwenty/css/foundation.css') }}" rel="stylesheet" type="text/css"> -->
+    <link href="{{ url_for('static', filename='twentytwenty/css/twentytwenty.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- Add fancyBox -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/jquery.fancybox.css')}}" type="text/css" media="screen" />
+    <!-- Optionally add helpers - button, thumbnail and/or media -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-buttons.css')}}" type="text/css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-thumbs.css')}}" type="text/css" />
+</head>
+<body>
+
+    <!-- Button trigger modal -->
+    <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+      Launch demo modal
+    </button>
+
+    <div class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Modal title</h4>
+          </div>
+          <div class="modal-body">
+            <p>One fine body&hellip;</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sly/sly.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='raphael/raphael.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='twentytwenty/js/jquery.event.move.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='twentytwenty/js/jquery.twentytwenty.js') }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='chart2/d3.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='chart2/d3.layout.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='chart2/rickshaw.min.js') }}"></script>
+
+    <script src="http://d23cj0cdvyoxg0.cloudfront.net/xivelyjs-1.0.4.min.js"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/jquery.fancybox.pack.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-buttons.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-media.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-thumbs.js')}}"></script>
+</body>
+</html>

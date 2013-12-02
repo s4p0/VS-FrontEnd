@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>sample2</title>
+		<meta name="author" content="Felipe Correa" />
+		<!-- Date: 2013-04-27 -->
+	</head>
+	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="{{ url_for('static', filename='OpenLayers-2.12/lib/OpenLayers.js') }}"></script>
+	<script src="{{ url_for('static', filename='dojo/dojo.js') }}"></script>
+	<script type="text/javascript">
+		var map;
+		var wms;
+		var wktLayer;
+		var picturesLayer;
+		var picturesFeatures = [];
+		var tracksLayer;
+
+		var icon_path = "{{ url_for('static', filename='icons2') }}"
+		function init(){
+			map = new OpenLayers.Map( 'map' );
+
+			
+
+			
+			wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",       
+					"http://labs.metacarta.com/wms/vmap0", {
+					 layers: 'basic', 
+					 isBaseLayer: true
+			} );
+			map.addLayer(wms);
+			
+			picturesLayer = new OpenLayers.Layer.Vector('Pictures');
+			map.addLayer(picturesLayer);
+
+			tracksLayer = new OpenLayers.Layer.Vector('Tracks');
+			map.addLayer(tracksLayer);
+			
+			map.addControl(new OpenLayers.Control.LayerSwitcher());
+			map.setCenter(new OpenLayers.LonLat(0,0),2);
+
+			$.getJSON('/api/pictures/', function(data){
+			var val = data['results'];
+				$.each(val, function (key, val){
+					var geo = val['geo'];
+					var lonlat = new OpenLayers.LonLat(geo.geometry.coordinates[0], geo.geometry.coordinates[1]);
+					var pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+					var pointFeature = new OpenLayers.Feature.Vector(pointGeometry, geo['properties'], {
+						pointRadius: 16,
+						fillOpacity: 0.7,
+						externalGraphic: icon_path + '/' + 'forest.png'
+					});
+					picturesFeatures.push(pointFeature);
+				});
+				
+				picturesLayer.addFeatures(picturesFeatures);
+				picturesLayer.refresh();
+			});
+
+			$.getJSON('/api/tracks/', function(data){
+				var values = data['results'];
+				var tracksFeatures = [];
+				$.each(values, function (key, val){
+					var b = 0;
+					var lonlat = new OpenLayers.LonLat(val.tracks.features[0].geometry.coordinates[0], val.tracks.features[0].geometry.coordinates[1]);
+					animal_kinds = ['jaguar', 'tiger', 'elephant', 'monkey', 'birds']
+					
+					var icon = 'symbol_blank.png';
+					if(val.animal.kind == 'tiger')
+						icon = 'tiger-2.png';
+					else if(val.animal.kind == 'jaguar')
+						icon = 'zoo.png';
+					else if(val.animal.kind == 'elephant')
+						icon = 'elephants.png';
+					else if(val.animal.kind == 'monkey')
+						icon = 'monkey-export.png';
+					else if(val.animal.kind == 'birds')
+						icon = 'birds-2.png';
+
+					var pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+					var pointFeature = new OpenLayers.Feature.Vector(pointGeometry, 
+							val, {
+								pointRadius: 16,
+								fillOpacity: 0.9,
+								externalGraphic: icon_path + '/' + icon
+							});
+					tracksFeatures.push(pointFeature)
+				});
+				tracksLayer.addFeatures(tracksFeatures);
+				tracksLayer.refresh();
+			});
+
+			var tracksControl = new OpenLayers.Control.SelectFeature(tracksLayer,
+			{
+				hover: false,
+				onSelect: function (feature){
+				  var layer = feature.layer;
+				  feature.style.fillOpacity = 1;
+				  feature.style.pointRadius = 20;
+				  layer.drawFeature(feature);
+
+				  
+				  var content = '<a href=\"/track/' + feature.attributes._id + '\" target=\"_blank\" rel=detail">detail for '+ feature.attributes.animal.kind + ': ' + feature.attributes._id +'</a>' ;
+				  var tack_popup = new OpenLayers.Popup.FramedCloud(
+				    feature.id + "_popup", 
+				    feature.geometry.getBounds().getCenterLonLat(),
+				    new OpenLayers.Size(250,100),
+				    content,
+				    null);
+				    feature.popup = tack_popup;
+				    map.addPopup(tack_popup);
+				},
+				onUnselect: function(feature){
+				  var layer = feature.layer;
+				  feature.style.fillOpacity = 0.7;
+				  feature.style.pointRadius = 16;
+				  layer.drawFeature(feature);
+				  map.removePopup(feature.popup);
+				}
+			})
+			map.addControl(tracksControl);
+			tracksControl.activate();
+
+			var picturesControl = new OpenLayers.Control.SelectFeature(picturesLayer,
+			  {
+			    hover: false,
+			    onSelect: function (feature){
+			      var layer = feature.layer;
+			      feature.style.fillOpacity = 1;
+			      feature.style.pointRadius = 20;
+			      layer.drawFeature(feature);
+
+			      var content = "<img src=" + "\"http://www.felipecorrea.com/images/" + feature.attributes.image_path + "\"width=200px >" ;
+			      var popup = new OpenLayers.Popup.FramedCloud(
+			        feature.id + "_popup", 
+			        feature.geometry.getBounds().getCenterLonLat(),
+			        new OpenLayers.Size(250,100),
+			        content,
+			        null);
+			        feature.popup = popup;
+			        map.addPopup(popup);
+			    },
+			    onUnselect: function(feature){
+			      var layer = feature.layer;
+			      feature.style.fillOpacity = 0.7;
+			      feature.style.pointRadius = 16;
+			      layer.drawFeature(feature);
+			      map.removePopup(feature.popup);
+			    }
+			  })
+			  
+			  map.addControl(picturesControl);
+			  picturesControl.activate();
+			}
+    </script>
+    <style type="text/css">
+      #map {
+          width: 1024px;
+          height: 600px;
+          border: 1px solid black;
+          
+      }
+  </style>
+	<body onload="init()">
+		<center>
+    <div id="map" class="olMap"/>
+</center>
+  </body>
+</html>

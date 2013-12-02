@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ForestWatchers.net</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">{% block base_style %}
+    <!-- Latest compiled and minified CSS -->
+    <!-- <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.css" /> -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <!-- <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css"> -->
+    <!-- <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css"> -->
+
+    </meta>
+    <title>JS Bin</title>
+
+    <style type="text/css">
+    li .activate img {
+        opacity: 0.8;
+        transition: opacity .25s ease-in-out;
+        -moz-transition: opacity .25s ease-in-out;
+        -webkit-transition: opacity .25s ease-in-out;
+    }
+    .fade:hover {
+        opacity: 0.5;
+    }
+    .frame ul li.slyActive {
+        color: #fff;
+        background: #a03232;
+    }
+    .frame {
+        height: 120px;
+        line-height: 100px;
+        overflow: hidden;
+        width: 100%;
+        /*width: 1200px;*/
+    }
+    .frame ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-size: 30px;
+    }
+    .frame ul li {
+        float: left;
+        width: 120px;
+        /*height: 100%;*/
+        height: 100px;
+        /*margin: 5px 5px 0 0;*/
+        margin-top: 0px;
+        margin-bottom: 0px;
+        margin-left: 2.5px;
+        margin-right: 2.5px;
+        /*margin-left: 5px;*/
+        /*padding: 0;*/
+        /*padding-left: 5px;
+        padding-right: 5px;*/
+        background: #333;
+        color: #ddd;
+        text-align: center;
+        cursor: pointer;
+    }
+    .frame ul li.active {
+        color: #fff;
+        background: #a03232;
+    }
+    /*.frame{
+        background-color: #AACCDD;
+        height: 100%;
+        width: 100%;
+    }*/
+    .wrapper {
+        /*padding-top: 20px;*/
+        /*position: relative;*/
+        margin-top: -15px;
+    }
+    .color-one {
+        background-color: #AACCCC;
+    }
+    .color-two {
+        background-color: #BBCCCC;
+        height: 310px;
+    }
+    .color-three {
+        background-color: #CCCCDD;
+        height: 310px;
+    }
+    #map {
+        /*background-color: #AACCDD;*/
+        /*height: 590px;*/
+        /*width: 95%;*/
+        /*margin: 10px;*/
+        /*margin-top: -10px;*/
+        height: 100%;
+    }
+    #footer {
+        min-height: 90px;
+        max-height: 150px;
+    }
+    </style>
+    {% endblock %}
+</head>
+
+<body>
+
+    <div class="navbar navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Project name</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a>
+                    </li>
+                    <li><a href="#about">About</a>
+                    </li>
+                    <li><a href="#contact">Contact</a>
+                    </li>
+                </ul>
+                <!-- <form class="navbar-form navbar-right">
+                    <div class="form-group">
+                        <input type="text" placeholder="Email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" placeholder="Password" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-success">Sign in</button>
+                </form> -->
+            </div>
+            <!--/.navbar-collapse -->
+        </div>
+    </div>
+
+    <!-- <div class="container"> -->
+    <div class="row">
+        <div id="main" class="col-lg-12 col-sm-12  col-md-12 col-xs-12">
+            <div id="map"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 col-sm-12  col-md-12 col-xs-12">
+                <div id="footer" class="frame">
+                    <ul class="slidee">
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- </div> -->
+
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+
+
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sly/sly.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/Popover.js') }}"></script>
+
+    <script type="text/javascript">
+    OpenLayers.Format.VolunteerSensingPictures = OpenLayers.Class(OpenLayers.Format, {
+        read: function(obj) {
+            this.data = obj;
+
+            gj = JSON.parse(obj);
+            var features = [];
+
+            for (var i = 0; i < gj.result.length; i++) {
+                pic = gj.result[i];
+                var feature = undefined;
+
+                // feature = photofeat_cache.hasFeature(pic.picture.id);
+                if (feature == undefined) {
+                    pic.angle = pic.picture.magneticHeading;
+                    pic.cardinal = getCardinal(pic.picture.magneticHeading);
+                    pic.label = 'cb';
+
+                    geo = pic.picture.geom;
+                    lonlat = new OpenLayers.LonLat(geo.coordinates[0], geo.coordinates[1]);
+                    pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+
+                    feature = new OpenLayers.Feature.Vector(pointGeometry, pic);
+                    // photofeat_cache.AddFeature(pic.picture.id, feature.clone());
+                }
+                features.push(feature);
+            };
+            return features;
+        }
+    });
+
+    var MyMap = function() {
+        var cache = '';
+        var mapserv_url = 'http://' + location.hostname + "/cgi-bin/mapserv";
+        var icon_path = "{{ url_for('static', filename='icons') }}";
+        var SHADOW_Z_INDEX = 5;
+        var MARKER_Z_INDEX = 100;
+        var mapObj = '';
+        var divId = '';
+
+        getCardinal = function(value) {
+            var bearings = ["NE", "E", "SE", "S", "SW", "W", "NW", "N"];
+
+            var index = value - 22.5;
+            if (index < 0)
+                index += 360;
+            index = parseInt(index / 45);
+
+            return (bearings[index]);
+        }
+
+        layers = {
+            Modis: new OpenLayers.Layer.MapServer("Modis (250m) - 2013-08-04",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "2013216",
+                    // transparent: "true",
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }),
+            States: new OpenLayers.Layer.WMS("Brazilian States",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "estados",
+                    transparent: "true",
+                    opacity: 1.0,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }),
+            ANNClassification: new OpenLayers.Layer.WMS("ANN Classification",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "ANNClassified",
+                    transparent: "true",
+                    opacity: 1.0,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 1.0
+                }),
+            ANNProbability: new OpenLayers.Layer.WMS("ANN Probability",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "ANNProbability",
+                    transparent: "true",
+                    opacity: 1.0,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 1.0
+                }),
+            Hydrography: new OpenLayers.Layer.WMS("Brazilian Hydrography",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "hidro_prodes",
+                    transparent: "true",
+                    opacity: 0.5,
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 0.5
+                }),
+            ConservationUnit: new OpenLayers.Layer.WMS("Conservation Unit",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "unidadeconservacao",
+                    transparent: "true",
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 0.5
+                }),
+            IndigenousTerritory: new OpenLayers.Layer.WMS("Indigenous Territory",
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: "terraindigena",
+                    transparent: "true",
+                    // format: "image/png",
+                    srs: "EPSG:4326"
+                }, {
+                    visibility: false,
+                    opacity: 0.5
+                }),
+            otherBaseLayer: new OpenLayers.Layer.MapServer('??? (2.5M) 2009-2011',
+                mapserv_url, {
+                    map: "/var/www/local.map",
+                    layers: ['2009_2.5', '2011_2.5'],
+                    transparent: "false",
+                    format: "image/png",
+                    srs: "EPSG:4326"
+                })
+        };
+
+        bboxStrategy = new OpenLayers.Strategy.BBOX({
+            resFactor: 1,
+            ratio: 1
+        });
+
+        photoLayer = new OpenLayers.Layer.Vector("Photos", {
+            eventListeners: {
+                "featuresadded": function(e) {
+                    // alert(e.features.length);
+                },
+                'featuresremoved': function(e) {
+                    // alert('featuresremoved')
+                },
+                'refresh': function(e) {
+                    // alert('refreshed');
+                },
+                // 'loadend': function(e) {
+                //     alert('loadend');
+                // }
+                'loadend': MyMap.prototype.bboxRefreshed,
+                'sketchcomplete': function(e) {
+                    var b = 0;
+                }
+
+
+            },
+            projection: "EPSG:4326",
+            strategies: [bboxStrategy],
+            protocol: new OpenLayers.Protocol.HTTP({
+                url: "/api/pictures",
+                params: {},
+                callbackKey: 'jsoncallback',
+                format: new OpenLayers.Format.VolunteerSensingPictures({
+                    keepData: true
+                }),
+            }),
+            rendererOptions: {
+                yOrdering: true
+            },
+            styleMap: new OpenLayers.StyleMap({
+                'default': OpenLayers.Util.applyDefaults({
+                    graphic: true,
+                    graphicWidth: 32,
+                    graphicHeight: 37,
+                    externalGraphic: icon_path + '/' + 'blue_photo_a.png',
+                    backgroundGraphic: icon_path + '/' + 'shadow.png',
+
+                    graphicZIndex: MARKER_Z_INDEX,
+                    backgroundGraphicZIndex: SHADOW_Z_INDEX,
+
+                    backgroundXOffset: -2,
+                    backgroundYOffset: -16,
+
+                    graphicOpacity: 0.6,
+                }, OpenLayers.Feature.Vector.style["default"]),
+                'select': OpenLayers.Util.applyDefaults({
+                    graphicOpacity: 1.0,
+                    graphicZIndex: 100000000,
+                    pointerEvents: "visiblePainted"
+                }, OpenLayers.Feature.Vector.style["default"])
+            }),
+        })
+
+        layers['photoLayer'] = photoLayer;
+        bboxStrategy.merge = MyMap.prototype.customMerge;
+    }
+
+    //MyMap.prototype.merge = function()
+    MyMap.prototype.hasFeature = function(id) {
+        return cache[id];
+    }
+
+    MyMap.prototype.bboxRefreshed = function(e) {
+        lyrs = MyMap.prototype.getLayers();
+        feats = lyrs.photoLayer.features;
+
+        var visibles = [];
+        map = MyMap.prototype.getMap();
+        extent = map.getExtent();
+        for (var i = 0; i < feats.length; i++) {
+            var feat = feats[i];
+            if (extent.containsLonLat(new OpenLayers.LonLat(feat.geometry.x, feat.geometry.y)))
+                visibles.push(feat);
+        };
+
+        if (visibles.length > 0) {
+            // sly.destroy();
+            $('.slidee').empty();
+            for (var i = 0; i < visibles.length; i++) {
+                // var picture = visibles[i].attributes.picture;
+                img = '/static/uploads/thumb_120/' + visibles[i].attributes.picture.fileName;
+                var li = $('<li/>')
+                // .attr('id', visibles[i].attributes.picture.id)
+                // .attr('data-toggle', 'popover')
+                // .attr('data-content', 'Test Content')
+                .attr("data-featid", visibles[i].id)
+                    .append($('<img/>')
+                        .attr('src', img)
+                )
+                sly.add(li);
+                $.data(li[0], 'feat', visibles[i]);
+            }
+            // sly.init();
+
+            /*
+            <a href="#" class="btn btn-lg btn-danger" data-toggle="popover" title="" data-content="And here's some amazing content. It's very engaging. right?" data-original-title="A Title">Click to toggle popover</a>
+            */
+            sly.reload();
+        }
+
+    }
+
+    MyMap.prototype.addFeature = function(id, feat) {
+        if (!MyMap.prototype.hasFeature(id)) {
+            cache[id] = feat;
+        }
+        return MyMap.prototype.hasFeature(id);
+    }
+
+    MyMap.prototype.getBBOXStrategy = function() {
+        return bboxStrategy;
+    }
+
+    MyMap.prototype.init = function(mapid) {
+        divId = mapid;
+        mapObj = new OpenLayers.Map(divId);
+        for (var ly in layers) {
+            if (layers.hasOwnProperty(ly)) {
+                mapObj.addLayer(layers[ly]);
+            }
+        }
+        mapObj.addControl(new OpenLayers.Control.LayerSwitcher());
+        mapObj.setCenter(new OpenLayers.LonLat(-54.89, -3), 12);
+        cache = {};
+        var events = mapObj.events;
+        // events.register('moveend', mapObj, function(e){
+        //     //alert('moveend');
+        //     var a = m.getLayers().photoLayer.features.length;
+        //     alert(a);
+        //     return true;
+        // });
+        lyr = layers.Modis.clone();
+        lyr.isBaseLayer = true;
+        lyr1 = layers.States.clone();
+        lyr1.isBaseLayer = true;
+        var overview1 = new OpenLayers.Control.OverviewMap({
+            maximized: true,
+            maximizeTitle: 'Show the overview map',
+            minimizeTitle: 'Hide the overview map',
+            layers: [lyr, lyr1],
+            minRatio: 16,
+            maxRatio: 64,
+            numZoomLevels: 20,
+        });
+        mapObj.addControl(overview1);
+    }
+
+
+    MyMap.prototype.customMerge = function(resp) {
+        var a = 0;
+        // for (var feat in resp.features) {
+        var features = [];
+        for (var i = 0; i < resp.features.length; i++) {
+            var feat = resp.features[i];
+            var id = feat.data.picture.id;
+
+            if (!MyMap.prototype.hasFeature(id))
+                features.push(MyMap.prototype.addFeature(id, feat));
+        };
+        this.layer.addFeatures(features);
+        this.response = null;
+        this.layer.events.triggerEvent("loadend");
+        // this.layer.events.triggerEvent("refresh");
+    }
+
+    MyMap.prototype.getLayers = function() {
+        return layers;
+    };
+
+    MyMap.prototype.getMap = function() {
+        return mapObj;
+    }
+
+    var m;
+    var sly;
+    $(document).ready(function() {
+            var h = $(window).height();
+            var w = $(window).width();
+
+            var footer = 100;
+            var rest = (1 - (footer / h)) * h;
+
+            $('#main').css('height', rest - 82);
+            $('#footer').css('height', footer);
+
+            m = new MyMap();
+            m.init('map');
+
+
+            var options = {
+                horizontal: 1,
+                itemNav: 'basic',
+                scrollBy: 1,
+                dragging: 1,
+                speed: 1,
+                // scrollBar: $('.scrollbar'),
+                mouseDragging: 1,
+                activateOn: 'click',
+                // activateOn: 'mouseenter',
+                // startAt: 2,
+                dragHandle: 1,
+                smart: 0,
+                // activeClass: 'olControlSelectFeature'
+                activeClass: 'slyActive'
+            };
+
+            sly = new Sly('#footer', options);
+
+
+            sly.on('load', function(eventName) {
+                // alert('loaded');
+                var a = 0;
+                $('.slyActive').removeClass('slyActive');
+            });
+
+            $('.slidee').click(function(e) {
+
+                // if activated, remove
+                // if($(e.target).parents('li').hasClass('slyActive'))
+                //     $(e.target).parents('li').removeClass('slyActive');
+            });
+
+            var slyReady = false;
+            sly.init();
+
+            
+
+            sly.on('active', function(eventName, itemIndex) {
+                    // alert(itemIndex);
+                    if (slyReady) {
+                    var options = {
+                        animation: 'true',
+                        html: 'false',
+                        placement: 'top',
+                        content: 'content',
+                        title: 'title',
+                        container: $('#map')
+                    };
+                    var element = $(sly.getPos(itemIndex).el);
+                    element.popover(options);
+                    element.popover('toggle');
+                }
+            });
+
+        
+
+        slyReady = true;
+
+
+
+    });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ForestWatchers.net</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">{% block base_style %}
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" media="screen">
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+
+    </meta>
+    <title>Maps...</title>
+    <style type="text/css">
+    html, body, #map {
+        position: absolute;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .navbar-fade {
+        opacity: 0.7;
+    }
+    .navbar-fade:hover {
+        opacity: 1.0;
+    }
+    /* Frame */
+    .frame {
+        height: 92px;
+        /*line-height: 250px;*/
+        overflow: hidden;
+    }
+    .frame ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-size: 50px;
+    }
+    .frame ul li:hover {
+        opacity: 1.0;
+    }
+    .frame ul li {
+        float: left;
+        /*width: 227px;*/
+        height: 100%;
+        margin: 0 1px 0 0;
+        padding: 0;
+        background: #333;
+        color: #ddd;
+        text-align: center;
+        cursor: pointer;
+        opacity: 0.4;
+    }
+    .frame ul li.active {
+        /*color: #fff;*/
+        background: #a03232;
+        opacity: 1.0;
+    }
+    /* Scrollbar */
+    .scrollbar {
+        margin: 0 0 1em 0;
+        height: 2px;
+        background: #ccc;
+        line-height: 0;
+    }
+    .scrollbar .handle {
+        width: 100px;
+        height: 100%;
+        background: #292a33;
+        cursor: pointer;
+    }
+    .scrollbar .handle .mousearea {
+        position: absolute;
+        top: -9px;
+        left: 0;
+        width: 100%;
+        height: 20px;
+    }
+    </style>
+    {% endblock %}
+</head>
+
+<body>
+
+    <!-- <div id="footer" class="frame">
+        <ul class="slidee"></ul>
+    </div> -->
+    <div class="frame effects" id="effects">
+        <ul class="clearfix">
+
+        </ul>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sly/sly.js') }}"></script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+
+
+        var options = { //$frame.sly(
+            horizontal: 1,
+            itemNav: 'basic',
+            // smart: 1,
+            activateOn: 'click',
+            mouseDragging: 1,
+            touchDragging: 1,
+            releaseSwing: 1,
+            startAt: 3,
+            // scrollBar: $wrap.find('.scrollbar'),
+            scrollBy: 1,
+            // pagesBar: $wrap.find('.pages'),
+            activatePageOn: 'click',
+            speed: 500,
+            // elasticBounds: 1,
+            // easing: 'easeOutExpo',
+            easing: 'swing',
+            dragHandle: 1,
+            // dynamicHandle: 1,
+            clickBar: 1,
+        };
+
+        sly = new Sly('#effects', options);
+        sly.init();
+
+        $.getJSON('/api/pictures', function(data) {
+            var val = data['result'];
+
+            $.each(val, function(key, val) {
+                // img = '/static/uploads/thumb_120/' + val.picture.fileName;
+                img = '/static/uploads/thumb_120/' + val.picture.fileName;
+                var li = $('<li/>')
+                    .attr("data-featid", val.picture.id)
+                    .append($('<img/>')
+                        .attr('src', img)
+                )
+                sly.add(li);
+                // $.data(li[0], 'feat', visibles[i]);
+            });
+            sly.reload();
+        });
+    });
+    </script>
+</body>
+
+</html>
