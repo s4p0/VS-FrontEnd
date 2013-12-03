@@ -479,16 +479,16 @@
     <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-thumbs.js')}}"></script>
 
     <script type="text/javascript">
-    var cache = new featureCache();
+    
     var map;
     var SHADOW_Z_INDEX = 99;
     var MARKER_Z_INDEX = 100;
     var icon_path = "{{ url_for('static', filename='icons') }}";
     var upload_path = "{{ url_for('static', filename='uploads') }}";
-    var iconAudio = icon_path + '/' + 'orange_audio_a.png'
-    var iconStat = icon_path + '/' + 'magenta_stat_a.png'
-    var iconPhoto = icon_path + '/' + 'blue_photo_a.png',
-    var iconVideo = icon_path + '/' + 'green_video_a.png',
+    var iconAudio = icon_path + '/' + 'orange_audio_a.png';
+    var iconStat = icon_path + '/' + 'magenta_stat_a.png';
+    var iconPhoto = icon_path + '/' + 'blue_photo_a.png';
+    var iconVideo = icon_path + '/' + 'green_video_a.png';
     // var  _url = 'http://192.168.2.144/cgi-bin/mapserv';
     var mapserv_url = 'http://' + location.hostname + "/cgi-bin/mapserv";
 
@@ -1038,18 +1038,7 @@
             //sly.reload();
         });
     }
-    var featureCache = function() {
-        var self = this;
-        self.cache = {};
-
-        self.addFeature = function(featureid, feature) {
-            this.cache[featureid] = feature;
-        }
-
-        self.getFeature = function(featureid) {
-            return this.cache[featureid];
-        }
-    }
+    
 
     getCompassValue = function(value) {
         var index = value - 22.5;
