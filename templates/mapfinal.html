@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ForestWatchers.net</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/logov3.png') }}">{% block base_style %}
+    <!-- Latest compiled and minified CSS -->
+    <!-- <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.css" /> -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" media="screen">
+    <!-- Optional theme -->
+    <!-- <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css"> -->
+    <!-- <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.custom.css') }}" rel="stylesheet" type="text/css"> -->
+    <link href="{{ url_for('static', filename='OpenLayers/theme/default/style.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- <link href="{{ url_for('static', filename='twentytwenty/css/foundation.css') }}" rel="stylesheet" type="text/css"> -->
+    <link href="{{ url_for('static', filename='twentytwenty/css/twentytwenty.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- Add fancyBox -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/jquery.fancybox.css')}}" type="text/css" media="screen" />
+    <!-- Optionally add helpers - button, thumbnail and/or media -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-buttons.css')}}" type="text/css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-thumbs.css')}}" type="text/css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='chart2/rickshaw.css') }}">
+
+    </meta>
+    <title>Maps...</title>
+    <style type="text/css">
+    .small-logo {
+        height: 50px;
+        /*padding: 0px;*/
+        margin-bottom: -20px;
+        margin-top: -20px;
+        padding-bottom: 5px;
+        padding-top: 5px;
+    }
+    body {
+        /*background: transparent url({{ url_for('static', filename='images/fwalph.png') }}) no-repeat right bottom;
+            position: pull-right;  position in the center of the screen 
+            background-size: 200px;
+            background-attachment: fixed;*/
+    }
+    html, body, #map {
+        position: absolute;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+    .sensor-text {
+        /*display: inline-block;
+        line-height: 100%;
+        text-align: justify;        
+        color: black;*/
+        display: table-cell;
+        vertical-align: middle;
+        text-align: center;
+        font-size: medium;
+        color: black;
+        line-height: 100%;
+    }
+    .navbar-fade {
+        opacity: 0.7;
+    }
+    .navbar-fade:hover {
+        opacity: 1.0;
+    }
+    #push {
+        width: 100%;
+        height: 480px;
+    }
+    .popover {
+        max-width: none;
+        /*width: 700px;*/
+    }
+    .popover_wrapper {
+        width: 500px;
+    }
+    .popover_content {
+        /*height: 275px;*/
+        /*margin-top: 20px;*/
+        margin-top: 2em;
+        margin-bottom: 0em;
+        line-height: 100px;
+        /*height: 100px;*/
+    }
+    /*.frame {
+        height: 120px;
+        width: 100%;
+        background-color: blue;
+        position: absolute;
+    }
+    .frame ul {
+        list-style: none;
+    }
+    .frame ul li{
+        float: left;
+    }*/
+    #backward {
+        float: left;
+        width: 50px;
+        height: 100px;
+        position: relative;
+        opacity: 0.6;
+    }
+    #backward:hover {
+        opacity: 1.0;
+    }
+    #forward {
+        float: right;
+        width: 50px;
+        height: 100px;
+        position: relative;
+        opacity: 0.6;
+    }
+    #forward:hover {
+        opacity: 1.0;
+    }
+    .poster {
+        /*height: /100px;*/
+        width: 120px;
+    }
+    .frame {
+        /*position: absolute;*/
+        height: 100px;
+        line-height: 100px;
+        overflow: hidden;
+        /*width: 100%; //commented out to centralize it*/
+        /*width: 1200px;*/
+    }
+    .frame ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-size: 30px;
+    }
+    .audio-thumb {
+        background: #cccccc;
+    }
+    .frame ul li {
+        float: left;
+        width: 120px;
+        /*height: 100%;*/
+        height: 100px;
+        /*margin: 5px 5px 0 0;*/
+        margin-top: 0px;
+        margin-bottom: 0px;
+        margin-left: 2.5px;
+        margin-right: 2.5px;
+        /*margin-left: 5px;*/
+        /*padding: 0;*/
+        /*padding-left: 5px;
+        padding-right: 5px;*/
+        /*background: #333;*/
+        /*color: #ddd;*/
+        color: #FFFFFF;
+        text-align: center;
+        cursor: pointer;
+        opacity: 0.8;
+    }
+    .sensor{
+        display: table;
+    }
+    .frame ul li video {
+        width: 120px;
+        vertical-align: middle;
+    }
+    .frame ul li.active {
+        color: #fff;
+        background: #a03232;
+        opacity: 1.0;
+    }
+    .frame ul li:hover {
+        opacity: 1.0;
+    }
+    .classification {
+        /*max-width: 256px;*/
+    }
+    .modal-body {
+        /*height: 600px;*/
+    }
+    .navbar {
+        /*background-color: #195327;*/
+    }
+    </style>
+    {% endblock %}
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 col-md-10 col-sm-10 col-sm-offset-1 col-xs-12">
+
+                <nav class="navbar navbar-default navbar-fade" role="navigation">
+                    <div id="navbar-wrapper">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <!-- working -->
+                            <!-- <a class="navbar-brand" href="http://www.forestwatchers.net"><img src="{{ url_for('static', filename='images/fwalph.png') }}" class="img-responsive">ForestWatchers</a> -->
+                            <!-- imported -->
+                            <!-- <a class="brand" href="#"><img src="{{ url_for('static', filename='images/forestwatchers.png') }}") style="width: 100px; padding: 0;" /></a> -->
+                            <a class="navbar-brand" href="http://www.forestwatchers.net/">
+                                <img src="{{ url_for('static', filename='images/logov4.png') }}" ) class="small-logo" />
+                            </a>
+                        </div>
+
+                        <div class="collapse navbar-collapse navbar-ex1-collapse">
+                            <ul class="nav navbar-nav">
+                                <li class="active">
+                                    <a href="{{ request.base_url }}">
+                                        <span class="glyphicon glyphicon-home"></span>&nbsp;Home</a>
+                                </li>
+                                <!-- <li><a href="#">Contribute</a></li> -->
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                        <span class="glyphicon glyphicon-globe"></span>&nbsp;Contribute <b class="caret"></b>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                    <li><a href="#"><span data-icon-layer="picture"></span>&nbsp;Picture</a></li>
+                                    <li><a href="#"><span data-icon-layer="audio"></span>&nbsp;Audio</a></li>
+                                    <li><a href="#"><span data-icon-layer="video"></span>&nbsp;Video</a></li>
+                                    <li><a data-toggle="modal" href="#contributeData"><span data-icon-layer="stat"></span>&nbsp;Data</a></li>
+                                    
+                                        <li class="divider"></li>
+                                        <li>
+                                            <a href="/pybossa" target="_blank">
+                                                <span class="glyphicon glyphicon-share"></span>&nbsp;Get Involved</a>
+                                        </li>
+                                    </ul>
+                                    <li>
+                                        <a href="">
+                                            <span class="glyphicon glyphicon-book"></span>&nbsp;Tutorial
+                                        </a>
+                                    </li>
+                                </li>
+                            </ul>
+
+                            <ul class="nav navbar-nav navbar-right">
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-th-list"></span>&nbsp;Layers&nbsp;<b class="caret"></b></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#" data-layer="modis">MODIS (250m)&nbsp;</a></li>
+                                        <li><a href="#" data-layer="fine">SPOT (2.5m)&nbsp;</a></li>
+                                        <li class="divider"></li>
+                                            <li><a href="#" data-layer="audios"><span data-icon-layer="audio"></span>&nbsp;Audios&nbsp;<span class="glyphicon glyphicon-ok"></span></a></li>
+                                            <li><a href="#" data-layer="sensors"><span data-icon-layer="stat"></span>&nbsp;Data&nbsp;<span class="glyphicon"></a>
+                                            <li><a href="#" data-layer="photos"><span data-icon-layer="picture"></span>&nbsp;Pictures&nbsp;<span class="glyphicon glyphicon-ok"></span></a></li>
+                                            <li><a href="#" data-layer="videos"><span data-icon-layer="video"></span>&nbsp;Videos&nbsp;<span class="glyphicon glyphicon-ok"></span></a></li>
+                                            <li><a href="#" data-layer="track">Tracking</a></li>
+                                        </li>
+                                        <li><a href="#" data-layer="classification">ANN Classification</a></li>
+                                        <li><a href="#" data-layer="probability">ANN Probability</a></li>
+                                        <li><a href="#" data-layer="others">Others</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+
+                <button id="navbar-show" type="button" class="btn btn-default btn-xs">
+                    <span class="glyphicon glyphicon-chevron-down"></span>
+                </button>
+
+
+            </div>
+        </div>
+        <div class="row">
+            <div id="push">
+            </div>
+        </div>
+
+<!-- Modal -->
+<div class="modal fade" id="chart_form" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+      </div>
+      <div class="modal-body">
+        <div id="chart_container">
+                        <div id="y_axis"></div>
+                        <div id="chart"></div>
+                        <div id="legend"></div>
+                    </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+        <div id="contributeData" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Contribute With Your Data</h4>
+                    </div>
+                    <div class="modal-body">
+                        <!-- <p>Upload your data of <b>tracking</b> and <b>environmental sensors</b>&hellip;</p> -->
+                        <!-- <ul class="list-inline">
+                            <li><button type="button" class="btn btn-default" data-toggle="collapse" data-target="#environmentalData">Button One</button></li>
+                            <li><button type="button" class="btn btn-default" data-toggle="collapse" data-target="#trackData">Button One</button></li>
+                        </ul> -->
+                        <p>Upload your data of
+                            <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#trackData">Tracking</button>and
+                            <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#environmentalData">Environmental Sensors</button>&hellip;</p>
+                        <div id="environmentalData" class="collapse">
+                            <h1>Add xively</h1>
+                            <div class="alert alert-success" style="display: none;">
+                                <strong>Done!</strong>Xively feed added correctly.
+                            </div>
+                            <div class="alert alert-danger" style="display: none;">
+                                <strong>Warning!</strong>Could not obtain feed information.
+                            </div>
+                            <div class="input-group" data-submit-type="environmental">
+                                <span class="input-group-addon">xively.com/feeds/</span>
+                                <input type="text" class="form-control" placeholder="652943232" value="652943232">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button">Add</button>
+                                </span>
+                            </div>
+
+                            <div id="history"></div>
+                            <!-- /input-group -->
+                            <!-- <div class="input-group">
+                                <span class="input-group-addon">xively.com/feeds/</span>
+                                <input type="text" class="form-control" placeholder="feed_id">
+                                 652943232 // https://api.xively.com/v2/feeds/652943232
+                                Cross Brasil Feed ID 793067072
+                                API Endpoint https://api.xively.com/v2/feeds/793067072
+                            </div> -->
+                        </div>
+                        <div id="trackData" class="collapse">
+                            <p>Add Tracking Data</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+
+        <!-- <div id="modal-input" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Tracking File Input</h4>
+                    </div>
+                    <form role="form">
+                        <div class="modal-body">
+
+                            <div class="form-group">
+                                <label for="trackinput">Track File Input</label>
+                                <input type="file" id="tackid">
+                                <p class="help-block">Submit Animal Track File.</p>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Submit</button>
+                            <button type="submit" class="btn btn-default">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div> -->
+        <div id="modal-window" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Details</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>One fine body&hellip;</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
+        <!-- /.modal -->
+        <div class="row">
+
+            <button id="backward" class="btn btn-default">
+                <span class="glyphicon glyphicon-chevron-left"></span>
+            </button>
+            <button id="forward" class="btn btn-default">
+                <span class="glyphicon glyphicon-chevron-right"></span>
+            </button>
+
+            <div id="footer" class="frame">
+                <ul class="slidee">
+                    <!-- <li id="videos-start">videos</li>
+                    <li id="photos-start">photos</li> -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="small-logo">
+    <img src="{{ url_for('static', filename='images/fwalph.png') }}">
+    </div> -->
+
+
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='OpenLayers/OpenLayers.debug.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sly/sly.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='raphael/raphael.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='twentytwenty/js/jquery.event.move.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='twentytwenty/js/jquery.twentytwenty.js') }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='chart2/d3.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='chart2/d3.layout.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='chart2/rickshaw.min.js') }}"></script>
+
+    <script src="http://d23cj0cdvyoxg0.cloudfront.net/xivelyjs-1.0.4.min.js"></script>
+
+
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/jquery.fancybox.pack.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-buttons.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-media.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='fancybox/source/helpers/jquery.fancybox-thumbs.js')}}"></script>
+
+    <script type="text/javascript">
+    
+    var map;
+    var SHADOW_Z_INDEX = 99;
+    var MARKER_Z_INDEX = 100;
+    var icon_path = "{{ url_for('static', filename='icons') }}";
+    var upload_path = "{{ url_for('static', filename='uploads') }}";
+    var icons = {
+        "audio": icon_path + '/' + 'orange_audio_a.png',
+        "picture": icon_path + '/' + 'blue_photo_a.png',
+        "video": icon_path + '/' + 'green_video_a.png',
+        "stat": icon_path + '/' + 'magenta_stat_a.png'
+    }
+    var iconAudio = icon_path + '/' + 'orange_audio_a.png';
+    var iconStat = icon_path + '/' + 'magenta_stat_a.png';
+    var iconPhoto = icon_path + '/' + 'blue_photo_a.png';
+    var iconVideo = icon_path + '/' + 'green_video_a.png';
+    // var  _url = 'http://192.168.2.144/cgi-bin/mapserv';
+    var mapserv_url = 'http://' + location.hostname + "/cgi-bin/mapserv";
+
+    var geographic = new OpenLayers.Projection("EPSG:4326");
+    var mercator = new OpenLayers.Projection("EPSG:900913");
+    var selector = {
+        photos: '',
+        videos: '',
+        sensors: '',
+        audios: ''
+    };
+
+    var chartFactory = function() {
+        var self = this;
+
+        self.feedObject = 'aa';
+        self.palette = new Rickshaw.Color.Palette({
+            scheme: 'spectrum14'
+        });
+
+        self.series = [];
+
+        self.chartReady = function() {
+
+            var graph = new Rickshaw.Graph({
+                element: document.querySelector("#chart"),
+                renderer: 'line',
+                // width: 600,
+                // height: 200,
+                min: 'auto',
+                series: self.series
+            });
+
+            var legend = new Rickshaw.Graph.Legend({
+                graph: graph,
+                element: document.querySelector('#legend')
+            });
+
+            var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
+                graph: graph,
+                legend: legend
+            });
+
+            new Rickshaw.Graph.HoverDetail({
+                graph: graph
+            });
+
+            // var x_axis = new Rickshaw.Graph.Axis.Time({
+            //     graph: graph,
+            //     ticksTreatment: 'glow'
+            //     // orientation: 'bottom'
+            //     // tickFormat: Rickshaw.Fixtures.Number.formatKMBT
+            //     // element: document.getElementById('x_axis')
+            // });
+
+            // var y_axis = new Rickshaw.Graph.Axis.Y({
+            //     graph: graph,
+            //     orientation: 'left',
+            //     tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
+            //     element: document.getElementById('y_axis')
+            // });
+
+            graph.render();
+
+
+        }
+
+        self.pushSeries = function(serie) {
+            self.series.push(serie);
+            if (self.series.length == self.feedObject.datastreams.length) {
+                self.chartReady();
+            }
+        }
+
+        self.returnHistory = function(historyData) {
+            var b = 0;
+            var data = [];
+
+            historyData.datapoints.forEach(function(datapoint) {
+                data.push({
+                    x: Date.parse(datapoint.at),
+                    y: parseFloat(datapoint.value)
+                });
+            });
+
+            // name: 'serie A',
+            //               color: palette.color(),
+            //               data: data.a
+
+            var serie = {
+                name: historyData.id,
+                color: self.palette.color(),
+                data: data
+            };
+
+            self.pushSeries(serie);
+        }
+
+        self.returnDatastreams = function(id, datastream) {
+            xively.datastream.history(
+                self.feedObject.id,
+                datastream.id, {
+                    // duration: '2days',
+                    duration: '31days',
+                    // interval: 300
+                    interval: 1800
+                },
+                self.returnHistory);
+        }
+
+        self.returnFeedObject = function(feedObject) {
+            self.feedObject = feedObject;
+            $.each(self.feedObject.datastreams, self.returnDatastreams)
+        };
+
+        self.loadXively = function(feedid) {
+            xively.feed.get(feedid, self.returnFeedObject);
+        }
+    }
+
+
+    var getObservationData = function(data) {
+
+        // can put db logic here
+        // get info for *data*
+
+        // form = '<form role="form"><div class="form-group">' + '<textarea class="form-control" rows="4"></textarea>' + '<button type="submit" class="btn btn-default">Submit</button>' + '</form>';
+        text = '<p>observation data</p>';
+
+        html = '<div class="panel-group" id="observationDataGroup"><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">' + '<a class="accordion-toggle" data-toggle="collapse" data-parent="#observationDataGroup" href="#observationData">' + "Observations" + '<span style="float:right;" class="glyphicon glyphicon-chevron-down"></span></a></h4></div>' + '<div id="observationData" class="panel-collapse collapse">' + '<div class="panel-body">' + text + '</div>' + '</div>' + '</div>'
+
+        return html;
+    }
+    var slyEvents = function(sly) {
+        this.sly = sly;
+        this.bindAll = function() {
+            for (var evt in this.events) {
+                sly.on(evt, this.events[evt]);
+            }
+            $('.frame li.active').removeClass('active');
+        }
+        this.unbindAll = function() {
+            for (var evt in this.events) {
+                sly.off(evt);
+            }
+        }
+
+        this.events = {
+            'moveEnd': function(e) {
+                // var a = 0;
+                $('li[data-original-title]').css('left', sly.pos.dest);
+                if (sly.pos.cur != sly.pos.dest) {
+
+                    $('li[data-original-title]').popover('hide');
+                } else {
+                    $('li[data-original-title]').popover('show');
+                }
+            },
+            'desactive': function(eventName, itemIndex) {
+                for (control in selector) {
+                    if(selector[control])
+                        selector[control].unselectAll();
+                }
+                $(sly.getPos(itemIndex).el).popover('destroy');
+            },
+            'active': function(eventName, itemIndex) {
+                var table2;
+                var content;
+
+                element = sly.getPos(itemIndex).el;
+                featureid = $(element).attr('data-feature-id');
+                layer = $(element).attr('data-feature-layer');
+                feature = AllLayers[layer].getFeatureById(featureid);
+
+                selector[layer].select(feature);
+
+                type = $(element).attr('data-feature-type');
+
+                if (type == 'sensor') {
+                    //content = '<div id="chart_container"><div id="y_axis"></div><div id="chart"></div></div><div id="legend"></div></div>'
+                    // c = $(content);
+                    $('#chart_form').modal('show');
+
+                } else {
+                    popoverTable = createPopoverContentTable(feature.attributes, type);
+                    content = popoverTable;
+                    content += '<a data-toggle="modal" href="#modal-window">details</a>'
+
+                    dict2 = createDetailContentTable(feature.attributes, type);
+                    table2 = makeDetailTable(dict2);
+                }
+
+                // url = getTileCentered(feature, AllLayers.modis, map.getResolutionForZoom(12));
+                // url2 = getTileCentered(feature, AllLayers.classification, map.getResolutionForZoom(12));
+                // url3 = getTileCentered(feature, AllLayers.probability, map.getResolutionForZoom(12));
+
+                url = getTileCentered(feature, AllLayers.modis, map.getResolutionForZoom(12));
+                url2 = getTileCentered(feature, AllLayers.modis, map.getResolutionForZoom(12));
+                url3 = getTileCentered(feature, AllLayers.classification, map.getResolutionForZoom(12));
+
+                modal_content = '';
+                path = 'http://' + location.host + '/video/';
+                if (layer == 'videos') { //location.hostname
+                    modal_content += '<video controls preload="metadata" poster="' + path + feature.attributes.video.fileName.replace('.mp4', '.png') + '" style="width: 100%;">'
+                    // + '<source src="http://localhost/video/' 
+                    + '<source src="' + path + feature.attributes.video.fileName.replace('.mp4', '.webm') + '" type="video/webm" />' + '<source src="' + path + feature.attributes.video.fileName.replace('.mp4', '.ogg') + '" type="video/ogg" />' + '<source src="' + path + feature.attributes.video.fileName + '" type="video/mp4" />' + '</video>';
+                } else if (layer == 'photos') {
+                    modal_content += '<img style="width:100%;" src="' + upload_path + '/thumb_400/' + feature.attributes.picture.fileName + '"></img>'
+                } else if (layer == 'audios') {
+                    modal_content += '<audio controls>'
+                    // + '<source src="' + path + feature.attributes.audio.fileName.replace('.mp4', '.audio.mp3') + '" type="audio/mpeg" />' 
+                    + '<source src="' + path + feature.attributes.audio.fileName.replace('.mp4', '.audio.ogg') + '" type="audio/ogg" />' + '</audio>'
+                }
+
+                modal_content += table2;
+                observationData = getObservationData({
+                    type: type,
+                    id: featureid
+                });
+                if (observationData) {
+                    modal_content += observationData;
+                }
+
+
+                // modal_content += '<form role="form"><div class="form-group">'
+                //                 +'</div></form>'; //<textarea class="form-control" rows="3"></textarea>
+
+                // $('.modal-body').html(modal_content);
+                $('#modal-window .modal-body').html(modal_content);
+
+                var popover_options = {
+                    anmation: true,
+                    html: true,
+                    placement: 'top',
+                    container: 'body',
+                    content: content,
+                    // title: '&nbsp; <button id="popover-close" type="button" class="close" data-destroy="popover" aria-hidden="true">&times;</button>'
+                }
+                $('.frame li').popover('destroy');
+
+                $(element).popover(popover_options);
+
+
+                $(element).on('shown.bs.popover', function(e) {
+                    // alert('done');
+
+
+
+                    elem = $('.pop.direction');
+                    rotation = 'rotate(' + elem.data('direction') + 'deg)';
+
+                    arrow = $('<span>')
+                    //.text('&nbsp;')
+                    // .html('&nbsp;')
+                    .addClass('glyphicon')
+                        .addClass('glyphicon-arrow-up')
+                        .css('-webkit-transform', rotation)
+                        .css('-moz-transform', rotation)
+                        .css('-ms-transform', rotation)
+                        .css('transform', rotation)
+
+
+                    elem.append($('<div>').append(arrow));
+
+
+
+
+                    // (new chartFactory()).loadXively(feedid);
+                });
+
+
+                $(element).popover('show');
+                $(element).on('hidden.bs.popover', function(e) {
+                    // $(sly.getPos(sly.rel.activeItem).el).popover('destroy');
+                });
+
+                $('#popover-close').on('click', function(e) {
+                    $(sly.getPos(sly.rel.activeItem).el).popover('destroy');
+                });
+
+            }
+        }
+    }
+
+
+    var sly_events;
+
+    var getTileCentered = function(feature, layer, resolution) {
+        ln = new OpenLayers.LonLat(feature.geometry.x, feature.geometry.y);
+        size = layer.tileSize.w;
+        delta = size * resolution;
+        bnd = new OpenLayers.Bounds(ln.lon - delta, ln.lat - delta, ln.lon + delta, ln.lat + delta);
+        return layer.getURL(bnd);
+    }
+    var makeTable = function(dict) {
+        table = $('<table/>');
+        table.addClass('table').addClass('table-condensed').addClass('table-bordered')
+        thead = $('<thead/>');
+        tbody = $('<tbody/>');
+        tr = $('<tr/>')
+            .append($('<th/>').text('prop'))
+            .append($('<th/>').text('value'));
+        thead.append(tr);
+
+        for (var prop in dict) {
+            tr = $('<tr/>')
+            tr.append($('<td/>').text(prop));
+            tr.append($('<td/>').html(dict[prop]));
+            tbody.append(tr);
+        }
+
+        table.append(tbody);
+
+        return $('<p>').append(table).html();
+    }
+
+    var makeDetailTable = function(dict) {
+        group_id = 0;
+
+        accordion = '<div class="panel-group" id="accordion">'
+
+
+        for (var group in dict) {
+            group_id++;
+
+            accordion += '<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">';
+            accordion += '<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#group' + group_id + '">' + group + '<span style="float:right;" class="glyphicon glyphicon-chevron-down"></span></a>'
+            accordion += '</h4></div><div id="group' + group_id + '" class="panel-collapse collapse">'
+            accordion += '<div class="panel-body">'
+            accordion += makeTable(dict[group]);
+            accordion += '</div></div>'
+        }
+        accordion += '</div>'
+
+        return accordion;
+
+        //       <div class="panel-group" id="accordion">
+        // <div class="panel panel-default">
+        //   <div class="panel-heading">
+        //     <h4 class="panel-title">
+        //       <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+        //         Collapsible Group Item #1
+        //       </a>
+        //     </h4>
+        //   </div>
+        //   <div id="collapseOne" class="panel-collapse collapse in">
+        //     <div class="panel-body">
+        //       Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+        //     </div>
+        //   </div>
+        // </div>
+    }
+
+    var getPropertiesTable = function(feature, properties) {
+        table = $('<table/>');
+        table.addClass('table').addClass('table-condensed').addClass('table-bordered')
+        thead = $('<thead/>');
+        tbody = $('<tbody/>');
+        tr = $('<tr/>')
+            .append($('<th/>').text('prop'))
+            .append($('<th/>').text('value'));
+        thead.append(tr);
+
+        for (var i = 0; i < properties.length; i++) {
+            tr = $('<tr/>');
+            if (properties[i] == 'magneticHeading') {
+                value = feature[properties[i]];
+                tr.append($('<td/>').text('compass'));
+                tr.append(
+                    $('<td/>').text(getCardinal(value) + ' ')
+                    .append(
+                        $('<span/>')
+                        .addClass('glyphicon glyphicon-arrow-up')
+                        .css('-webkit-transform', 'rotate(' + value + 'deg)'))); //// $('<td/>').text(getCardinal(value) + ' ')
+                // tr.append($('<td/>').text());                
+            } else if (properties[i] == 'fileName') {
+                tr.append($('<td/>').text('full size'));
+                tr.append($('<td/>')
+                    .append($('<a/>')
+                        .attr('href', upload_path + '/' + feature[properties[i]])
+                        .attr('target', '_blank')
+                        .text('image')));
+            } else {
+
+                tr.append($('<td/>').text(properties[i]));
+                tr.append($('<td/>').text(feature[properties[i]]));
+            }
+            tbody.append(tr);
+        }
+
+        // table.append(thead).append(tbody);
+        table.append(tbody);
+
+        return $('<p>').append(table).html();
+
+        //   <table class="table table-condensed">
+        //   <thead>
+        //     <tr>
+        //       <th>#</th>
+        //       <th>First Name</th>
+        //       <th>Last Name</th>
+        //       <th>Username</th>
+        //     </tr>
+        //   </thead>
+        //   <tbody>
+        //     <tr>
+        //       <td>1</td>
+        //       <td>Mark</td>
+        //       <td>Otto</td>
+        //       <td>@mdo</td>
+        //     </tr>
+        //     <tr>
+        //       <td>2</td>
+        //       <td>Jacob</td>
+        //       <td>Thornton</td>
+        //       <td>@fat</td>
+        //     </tr>
+        //     <tr>
+        //       <td>3</td>
+        //       <td colspan="2">Larry the Bird</td>
+        //       <td>@twitter</td>
+        //     </tr>
+        //   </tbody>
+        // </table>
+    }
+    var getVisibleFeatures = function(layers) {
+        $.each(layers, function(index, layer) {
+            extent = map.getExtent();
+            feats = layer.features;
+            visibles = [];
+
+            $('[data-feature-layer=' + layer.name + ']').addClass('featRemove');
+
+            $.each(feats, function(index, feature) {
+                if (extent.containsLonLat(new OpenLayers.LonLat(feature.geometry.x, feature.geometry.y)))
+                    visibles.push(feature);
+            });
+
+            if (visibles.length > 0 && layer.visibility) {
+                $.each(visibles, function(index, visible) {
+                    element = $('#' + visible.fid);
+                    if (element.length == 0) {
+                        element = $('<li/>')
+                        element
+                            .attr('data-feature-layer', layer.name)
+                            .attr('data-feature-type', visible.attributes.type)
+                            .attr('id', visible.fid)
+                            .attr('data-feature-id', visible.id)
+
+                        var filename;
+                        var path;
+                        if (visible.attributes.type == 'video') {
+                            // path = 'http://localhost/video/';
+                            path = 'http://' + location.host + '/video/';
+                            filename = visible.attributes.video.fileName;
+
+                            element
+                                .attr('data-video-source', path + filename)
+                                .append($('<div/>')
+                                    .css('position', 'absolute')
+                                    .append($('<img>')
+                                        .attr('src', path + filename.replace('.mp4', '.png'))
+                                        .addClass('poster')))
+                                .append($('<div/>')
+                                    .addClass('glyphicon glyphicon-play-circle'))
+                            // .insertAfter('#videos-start');
+                            .appendTo('.frame ul'); //$('.frame ul')
+
+                        }
+
+                        if (visible.attributes.type == 'audio') {
+                            // path = 'http://localhost/video/';
+                            path = 'http://' + location.host + '/video/';
+                            filename = visible.attributes.audio.fileName;
+
+                            element
+                                .addClass('audio-thumb')
+                                .attr('data-audio-source', path + filename)
+                                .append($('<div/>')
+                                    .css('position', 'absolute'))
+                            // <!-- .append($('<img>')
+                            //     .attr('src', path + filename.replace('.mp4', '.png'))
+                            //     .addClass('poster'))) -->
+                            .append($('<div/>')
+                                .addClass('glyphicon glyphicon-music'))
+                                .appendTo('.frame ul'); //$('.frame ul')
+
+                        }
+
+                        if (visible.attributes.type == 'picture') {
+                            path = upload_path + '/thumb_120/';
+                            filename = visible.attributes.picture.fileName;
+                            element.append(
+                                $('<img/>')
+                                .attr('src', path + filename)
+                            )
+                            // .insertAfter('#photos-start');
+                            .appendTo('.frame ul');
+
+                        }
+
+                        if (visible.type == 'sensor') {
+                            // .attr('data-feature-layer', layer.name)
+                            // .attr('data-feature-type', visible.type)
+                            // .attr('data-feature-id', visible.id)
+                            element.attr('data-xively-feed', visible.attributes.id)
+                                // .append($('<span/>')
+                                .addClass('sensor')
+                                .append($('<p/>')
+                                    .text(visible.attributes.title)
+                                    .addClass('sensor-text'))
+                            // .css('display', 'inline-block'))
+                            .appendTo('.frame ul');
+                        }
+
+                        $.data(element[0], 'feat', visible);
+
+
+
+                    } else {
+                        element.removeClass('featRemove');
+                        element.attr('data-feature-id', visible.id)
+                    }
+                });
+            }
+            toremove = $('.featRemove');
+            if (toremove.length > 0)
+                toremove.popover('destroy');
+            toremove.remove();
+
+            sly_events.unbindAll();
+            sly.reload();
+            sly_events.bindAll();
+
+            // $(".fancybox").fancybox();
+            $(".fancybox").fancybox({
+                afterLoad: function() {
+                    this.title = '<a href="' + this.href + '">Download</a> ' + this.title;
+                },
+                helpers: {
+                    title: {
+                        type: 'inside'
+                    }
+                }
+            });
+            //sly.off('load');
+            //sly.reload();
+        });
+    }
+    
+
+    getCompassValue = function(value) {
+        var index = value - 22.5;
+        if (index < 0)
+            index += 360;
+        index = parseInt(index / 8);
+        return index;
+    }
+
+    getCardinal = function(value) {
+        var bearings = ["Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest", "North"];
+
+        var index = value - 22.5;
+        if (index < 0)
+            index += 360;
+        index = parseInt(index / 45);
+
+        return (bearings[index]);
+    }
+
+    
+
+    var AllLayers = {
+        osm: new OpenLayers.Layer.OSM("OpenStreetMap", null, {
+            buffer: 3
+        }, {
+            isBaseLayer: false,
+            opacity: 1.0,
+        }),
+        modis: new OpenLayers.Layer.WMS("Modis (250m) - 2013-08-04",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "2013216",
+                transparent: "true",
+                units: 'meters'
+            }, {
+                visibility: false,
+                isBaseLayer: false,
+                singleTile: false,
+                opacity: 0.8,
+                // maxExtent: new OpenLayers.Bounds(minx,miny,maxx,maxy),
+                // getMaxExtent: new OpenLayers.Bounds(-58.5446999999999989, -13.1942000000000004, -49.4528999999999996, 5.6916000000000002),
+                maxResolution: "auto"
+            }),
+        fine: new OpenLayers.Layer.WMS('??? (2.5M) 2009-2011',
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: ['2009_2.5', '2011_2.5'],
+                // layers: ['2009_2.5'],
+                transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.8,
+                isBaseLayer: false,
+                singleTile: false
+            }),
+        classification: new OpenLayers.Layer.WMS("ANN Classification",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "ANNClassified",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 1.0,
+                isBaseLayer: false
+            }),
+        probability: new OpenLayers.Layer.WMS("ANN Probability",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "ANNProbability",
+                transparent: "true",
+                opacity: 1.0,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 1.0,
+                isBaseLayer: false
+            }),
+        hydrography: new OpenLayers.Layer.WMS("Brazilian Hydrography",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "hidro_prodes",
+                transparent: "true",
+                opacity: 0.5,
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5,
+                isBaseLayer: false
+            }),
+        conservation: new OpenLayers.Layer.WMS("Protected Area",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "unidadeconservacao",
+                transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5,
+                isBaseLayer: false
+            }),
+        indigenous: new OpenLayers.Layer.WMS("Indigenous Territory",
+            mapserv_url, {
+                map: "/var/www/local.map",
+                layers: "terraindigena",
+                transparent: "true",
+                // format: "image/png",
+                srs: "EPSG:4326"
+            }, {
+                visibility: false,
+                opacity: 0.5,
+                isBaseLayer: false
+            }),
+    };
+
+    bboxStrategy = new OpenLayers.Strategy.BBOX({
+        resFactor: 1,
+        ratio: 1
+    });
+
+    OpenLayers.Format.VolunteerSensingPictures = OpenLayers.Class(OpenLayers.Format, {
+        read: function(obj) {
+            // bboxStrategy.deactivate();
+            this.data = obj;
+
+            gj = JSON.parse(obj);
+            var features = [];
+
+            for (var i = 0; i < gj.result.length; i++) {
+                pic = gj.result[i];
+                var feature = undefined;
+                var geo;
+                var fid;
+                var type;
+
+
+                // feature = cache.getFeature(pic.picture.id);
+                if (feature == undefined) {
+                    // pic.angle = pic.picture.magneticHeading;
+                    // pic.cardinal = getCardinal(pic.picture.magneticHeading);
+                    // pic.label = 'cb';
+                    if (pic.picture) {
+                        type = 'picture';
+                        geo = pic.picture.geom;
+                        // pic.type = 'photoItem';
+                        pic.type = 'picture';
+                        fid = pic.type + pic.picture.id;
+                    } else if (pic.video) {
+                        type = 'video';
+                        geo = pic.video.geom;
+                        // pic.type = 'videoItem';
+                        pic.type = 'video'
+                        fid = pic.type + pic.video.id;
+                    } else if (pic.audio) {
+                        type = 'audio';
+                        geo = pic.audio.geom;
+                        pic.type = 'audio';
+                        fid = pic.type + pic.audio.id;
+                    }
+
+                    lonlat = new OpenLayers.LonLat(geo.coordinates[0], geo.coordinates[1]);
+                    pointGeometry = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+
+                    feature = new OpenLayers.Feature.Vector(pointGeometry, pic);
+                    feature.fid = fid;
+                    feature.type = type;
+                    // cache.addFeature(pic.picture.id, feature);
+                }
+                features.push(feature);
+            };
+            return features;
+        }
+    });
+    
+    audioLayer = new OpenLayers.Layer.Vector("audios", {
+        renderers: ["Canvas", "SVG", "VML"],
+        eventListeners: {
+            "featuresadded": function(e) {},
+            'featuresremoved': function(e) {},
+            'refresh': function(e) {},
+            'loadend': function(e) { //alert('photo loadend')
+                getVisibleFeatures([this]);
+            }
+
+        },
+        projection: "EPSG:4326",
+        // strategies: [new OpenLayers.Strategy.BBOX({
+        //     resFactor: 1,
+        //     ratio: 1
+        // })],
+        strategies: [new OpenLayers.Strategy.Fixed()],
+        protocol: new OpenLayers.Protocol.HTTP({
+            url: "api/audios",
+            params: {},
+            callbackKey: 'jsoncallback',
+            format: new OpenLayers.Format.VolunteerSensingPictures({
+                keepData: true
+            }),
+        }),
+        rendererOptions: {
+            yOrdering: true
+        },
+        //externalGraphic: icon_path + '/' + 'orange_audio_a.png',
+        // backgroundGraphic: icon_path + '/' + 'shadow.png',
+        styleMap: new OpenLayers.StyleMap({
+            'default': OpenLayers.Util.applyDefaults({
+                graphic: true,
+
+                externalGraphic: icon_path + '/' + 'orange_audio_a.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+                
+                graphicZIndex: MARKER_Z_INDEX,
+                backgroundGraphicZIndex: SHADOW_Z_INDEX,
+
+                graphicXOffset: -16 * 0.7,
+                graphicYOffset: -37 * 0.7,
+                graphicWidth: 32 * 0.7,
+                graphicHeight: 37 * 0.7,
+
+                
+                backgroundXOffset: -2,
+                backgroundYOffset: -24,
+
+                graphicOpacity: 0.3,
+            }, OpenLayers.Feature.Vector.style["default"]),
+            'select': OpenLayers.Util.applyDefaults({
+
+                graphic: true,
+
+                externalGraphic: icon_path + '/' + 'orange_audio_a.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+
+                graphicWidth: 32 * 1.2,
+                graphicHeight: 37 * 1.2,
+
+                graphicXOffset: -16 * 1.2,
+                graphicYOffset: -37 * 1.2,
+
+                backgroundXOffset: -2 * 1.2,
+                backgroundYOffset: -30 * 1.2,
+
+                graphicOpacity: 1.0,
+                graphicZIndex: MARKER_Z_INDEX * 100,
+                backgroundGraphicZIndex: SHADOW_Z_INDEX * 100,
+                pointerEvents: "visiblePainted"
+            }, OpenLayers.Feature.Vector.style["default"])
+        }),
+    })
+
+    AllLayers['audios'] = audioLayer;
+
+    sensorLayer = new OpenLayers.Layer.Vector("sensors", {
+        renderers: ["Canvas", "SVG", "VML"],
+        // renderers: ["Canvas"],
+        projection: "EPSG:4326",
+        rendererOptions: {
+            yOrdering: true
+        },
+        styleMap: new OpenLayers.StyleMap({
+            'default': OpenLayers.Util.applyDefaults({
+                graphic: true,
+
+                externalGraphic: icon_path + '/' + 'magenta_stat_a.png', //'stat.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+                graphicZIndex: MARKER_Z_INDEX,
+                backgroundGraphicZIndex: SHADOW_Z_INDEX,
+
+                graphicXOffset: -16 * 0.7,
+                graphicYOffset: -37 * 0.7,
+                graphicWidth: 32 * 0.7,
+                graphicHeight: 37 * 0.7,
+
+                backgroundXOffset: -2,
+                backgroundYOffset: -24,
+
+                graphicOpacity: 0.9,
+            }, OpenLayers.Feature.Vector.style["default"]),
+            'select': OpenLayers.Util.applyDefaults({
+
+                graphic: true,
+                externalGraphic: icon_path + '/' + 'magenta_stat_a.png', //'stat.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+
+                graphicWidth: 32 * 1.2,
+                graphicHeight: 37 * 1.2,
+
+                graphicXOffset: -16 * 1.2,
+                graphicYOffset: -37 * 1.2,
+
+                backgroundXOffset: -2 * 1.2,
+                backgroundYOffset: -30 * 1.2,
+                //
+
+                
+                graphicZIndex: MARKER_Z_INDEX * 100,
+                backgroundGraphicZIndex: SHADOW_Z_INDEX * 100,
+                
+                graphicOpacity: 1.0,
+                pointerEvents: "visiblePainted"
+            }, OpenLayers.Feature.Vector.style["default"])
+        }),
+
+    });
+    AllLayers['sensors'] = sensorLayer;
+
+    photoLayer = new OpenLayers.Layer.Vector("photos", {
+        renderers: ["Canvas", "SVG", "VML"],
+        // renderers: ["Canvas"],
+        eventListeners: {
+            "featuresadded": function(e) {},
+            'featuresremoved': function(e) {},
+            'refresh': function(e) {},
+            'loadend': function(e) { //alert('photo loadend')
+                getVisibleFeatures([this]);
+            }
+        },
+        projection: "EPSG:4326",
+        // strategies: [new OpenLayers.Strategy.BBOX({
+        //     resFactor: 1,
+        //     ratio: 1
+        // })],
+        // strategies: new OpenLayers.Strategy.Fixed(),
+        strategies: [new OpenLayers.Strategy.Fixed()],
+        protocol: new OpenLayers.Protocol.HTTP({
+            url: "api/pictures",
+            params: {},
+            callbackKey: 'jsoncallback',
+            format: new OpenLayers.Format.VolunteerSensingPictures({
+                keepData: true
+            }),
+        }),
+        rendererOptions: {
+            yOrdering: true
+        },
+        styleMap: new OpenLayers.StyleMap({
+            'default': OpenLayers.Util.applyDefaults({
+                graphic: true,
+
+                externalGraphic: icon_path + '/' + 'blue_photo_a.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+                
+                graphicZIndex: MARKER_Z_INDEX,
+                backgroundGraphicZIndex: SHADOW_Z_INDEX,
+
+                graphicXOffset: -16 * 0.7,
+                graphicYOffset: -37 * 0.7,
+                graphicWidth: 32 * 0.7,
+                graphicHeight: 37 * 0.7,
+
+                
+                backgroundXOffset: -2,
+                backgroundYOffset: -24,
+
+                graphicOpacity: 0.3,
+            }, OpenLayers.Feature.Vector.style["default"]),
+            'select': OpenLayers.Util.applyDefaults({
+
+                graphic: true,
+
+                externalGraphic: icon_path + '/' + 'blue_photo_a.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+
+                graphicWidth: 32 * 1.2,
+                graphicHeight: 37 * 1.2,
+
+                graphicXOffset: -16 * 1.2,
+                graphicYOffset: -37 * 1.2,
+
+                backgroundXOffset: -2 * 1.2,
+                backgroundYOffset: -30 * 1.2,
+
+
+                
+                // graphicZIndex: MARKER_Z_INDEX,
+                // backgroundGraphicZIndex: SHADOW_Z_INDEX,
+
+                graphicOpacity: 1.0,
+                graphicZIndex: MARKER_Z_INDEX * 100,
+                backgroundGraphicZIndex: SHADOW_Z_INDEX * 100,
+                pointerEvents: "visiblePainted"
+            }, OpenLayers.Feature.Vector.style["default"])
+        }),
+    })
+    AllLayers['photos'] = photoLayer;
+
+    videoLayer = new OpenLayers.Layer.Vector("videos", {
+        renderers: ["Canvas", "SVG", "VML"],
+        eventListeners: {
+            "featuresadded": function(e) {},
+            'featuresremoved': function(e) {},
+            'refresh': function(e) {},
+            'loadend': function(e) { //alert('photo loadend')
+                getVisibleFeatures([this]);
+            }
+
+        },
+        projection: "EPSG:4326",
+        // strategies: [new OpenLayers.Strategy.BBOX({
+        //     resFactor: 1,
+        //     ratio: 1
+        // })],
+        strategies: [new OpenLayers.Strategy.Fixed()],
+        protocol: new OpenLayers.Protocol.HTTP({
+            url: "api/videos",
+            params: {},
+            callbackKey: 'jsoncallback',
+            format: new OpenLayers.Format.VolunteerSensingPictures({
+                keepData: true
+            }),
+        }),
+        rendererOptions: {
+            yOrdering: true
+        },
+        styleMap: new OpenLayers.StyleMap({
+            'default': OpenLayers.Util.applyDefaults({
+                graphic: true,
+
+                externalGraphic: icon_path + '/' + 'green_video_a.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+                graphicZIndex: MARKER_Z_INDEX,
+                backgroundGraphicZIndex: SHADOW_Z_INDEX,
+
+                graphicXOffset: -16 * 0.7,
+                graphicYOffset: -37 * 0.7,
+                graphicWidth: 32 * 0.7,
+                graphicHeight: 37 * 0.7,
+
+                backgroundXOffset: -2,
+                backgroundYOffset: -24,
+
+                graphicOpacity: 0.6,
+            }, OpenLayers.Feature.Vector.style["default"]),
+            'select': OpenLayers.Util.applyDefaults({
+                graphic: true,
+
+                externalGraphic: icon_path + '/' + 'green_video_a.png',
+                backgroundGraphic: icon_path + '/' + 'shadow.png',
+
+                graphicWidth: 32 * 1.2,
+                graphicHeight: 37 * 1.2,
+
+                graphicXOffset: -16 * 1.2,
+                graphicYOffset: -37 * 1.2,
+
+                backgroundXOffset: -2 * 1.2,
+                backgroundYOffset: -30 * 1.2,
+                ////
+
+                graphicZIndex: MARKER_Z_INDEX * 1000,
+                backgroundGraphicZIndex: SHADOW_Z_INDEX * 1000,
+                
+                graphicOpacity: 1.0,
+                pointerEvents: "visiblePainted"
+            }, OpenLayers.Feature.Vector.style["default"])
+        }),
+    })
+
+    AllLayers['videos'] = videoLayer;
+    
+
+    var changeLayerVisibility = function(layers, element) {
+        // var isChecked = element.find('.glyphicon').length > 0;
+        // element = element.parent('li').find('.glyphicon');
+        element = element.find('.glyphicon');
+        if (element) {
+            // element.html(element.text());
+            if(element.hasClass('glyphicon-ok')){
+                element.removeClass('glyphicon-ok');
+                for (var i = 0; i < layers.length; i++) {
+                    layers[i].setVisibility(false);
+                }
+            }else{
+                element.addClass('glyphicon-ok');
+                for (var i = 0; i < layers.length; i++) {
+                    layers[i].setVisibility(true);
+                }
+            }
+        }
+    }
+
+    var paper;
+    var hoverLi = function(e) {
+        if (paper) paper.remove();
+        var element;
+
+        if ($(e.target).is('img')) {
+            element = $(e.target).parent();
+            // return;
+        } else {
+            return;
+            // element = $(e.target);
+        }
+        // paper = Raphael(0,0, $(window).width(), $(window).height());
+        // if (element.hasClass('photoItem')) {
+        // if (element.hasClass('picture')) {
+        if (element.attr('data-feature-type') == 'picture') {
+            fid = element.attr('id');
+            feat = AllLayers.photos.getFeatureByFid(fid);
+
+            lonlat = new OpenLayers.LonLat(feat.geometry.x, feat.geometry.y);
+            px = map.getViewPortPxFromLonLat(lonlat);
+
+            // pos = $(element).position();
+            // pos = element.offset();
+
+            paper = Raphael(0, 0, $(window).width(), $(window).height());
+            c = paper.circle(e.screenX, e.screenY, element.width() / 2.0);
+            // c.glow({fill: true});
+            c.animate({
+                cx: px.x,
+                cy: px.y,
+                r: 10
+            }, 500, function(e) {
+                paper.remove();
+            });
+        }
+    };
+
+    var createPopoverContentTable = function(attributes, type) {
+        /*
+        + SENTIDO
+        + LAT-LON
+        + LINK FULL IMAGEM
+        + TIMESTAMP
+        */
+
+        var dict = {};
+        dict["Direction"] = "<div class='pop direction' data-direction='" + attributes[type].magneticHeading + "'><div  style='float:left;'>" + getCardinal(attributes[type].magneticHeading) + "&nbsp;&nbsp;</div></div>";
+        dict["Lat"] = "<p class='pop latitude'>" + parseFloat(attributes[type].latitude).toFixed(5) + "</p>";
+        dict["Lon"] = "<p class='pop longitude'>" + parseFloat(attributes[type].longitude).toFixed(5) + "</p>";
+
+        if (type == 'picture') {
+            image = attributes[type].fileName;
+            image_link = '<a class="btn btn-default btn-xs fancybox" href="' + upload_path + '/thumb_75/' + image + '">75&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-warning btn-xs fancybox"  target="_blank" href="' + upload_path + '/thumb_120/' + image + '">120&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-info btn-xs fancybox" target="_blank" href="' + upload_path + '/thumb_400/' + image + '">400&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-primary btn-xs fancybox" target="_blank" href="' + upload_path + '/' + image + '">Original&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>';
+            dict["Image"] = image_link;
+        } else if (type == 'video') {
+
+        }
+
+        dict["Date/Time"] = "<p class='pop created'>" + attributes[type].created + "</p>";
+
+        return makeTable(dict);
+
+    }
+
+    var createDetailContentTable = function(attributes, type) {
+
+        var dict = {};
+
+        var options = {};
+        var gps = {};
+        var compass = {};
+        var general = {};
+
+        options["GPS High Accuracy"] = attributes[type].optionsGPSHighAccuracy ? '<span class="label label-success">Enabled</span>' : '<span class="label label-danger">Disabled</span>';
+        options["GPS Timeout"] = attributes[type].optionsGPSTimeout + ' (ms)';
+        options["GPS Cache Time"] = parseFloat(attributes[type].optionsGPSMaxAge).toFixed(0) + ' (ms)';
+        options["Compass Update Interval"] = parseFloat(attributes[type].optionsCompassFrequency).toFixed(0) + ' (ms)';
+        options["Built-in Compass"] = attributes[type].optionsCompassEnabled == false ? '<span class="label label-success">Enabled</span>' : '<span class="label label-danger">Disabled</span>';
+        if (attributes[type].optionsCompassEnabled) {
+            options["External Compass"] = '<span class="label label-success">Enabled</span>';
+        }
+        if (attributes[type].optionsPictureQuality) {
+            options["Picture Quality"] = attributes[type].optionsPictureQuality + "%";
+        }
+
+        // compass["Direction"] = '<p><b>' + getCardinal(attributes[type].magneticHeading) + '</b></p>';
+        compass["Direction"] = "<div class='det direction' data-direction='" + attributes[type].magneticHeading + "'><div  style='float:left;'>" + getCardinal(attributes[type].magneticHeading) + "&nbsp;&nbsp;</div></div>";
+        compass["Magnetic North"] = parseFloat(attributes[type].magneticHeading).toFixed(2) + ' (deg)';
+        compass["True North"] = parseFloat(attributes[type].trueHeading).toFixed(2) + ' (deg)';
+
+        gps["Lat"] = parseFloat(attributes[type].latitude).toFixed(5) + ' (deg)';
+        gps["Lon"] = parseFloat(attributes[type].longitude).toFixed(5) + ' (deg)';
+        gps["Accuracy"] = parseFloat(attributes[type].accuracy).toFixed(2) + ' (m)';
+        gps["Altitude Accuracy"] = parseFloat(attributes[type].altitudeAccuracy).toFixed(2) + ' (m)';
+        gps["Heading"] = attributes[type].heading + +' (deg)';
+        gps["Speed"] = parseFloat(attributes[type].speed).toFixed(2) + ' (km/h)';
+
+        general["Entry ID"] = '#' + attributes[type].id;
+        general["Date/Time"] = attributes[type].created;
+        general["Device ID"] = '<small>' + attributes[type].deviceid + '</small>';
+
+        if (type == 'picture') {
+            image = attributes[type].fileName;
+            image_link = '<a class="btn btn-default btn-xs" target="_blank" href="' + upload_path + '/thumb_75/' + image + '">75&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-warning btn-xs"  target="_blank" href="' + upload_path + '/thumb_120/' + image + '">120&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-info btn-xs" target="_blank" href="' + upload_path + '/thumb_400/' + image + '">400&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-primary btn-xs" target="_blank" href="' + upload_path + '/' + image + '">Original&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>';
+            general["Image"] = image_link;
+        } else if (type == 'video') {
+
+        }
+
+        dict["General"] = general;
+        dict["GPS"] = gps;
+        dict["Compass"] = compass;
+        dict["Options"] = options;
+
+        return dict;
+
+        // type
+        // "picture"
+        // JSON.stringify( feature.attributes[type] )
+        // var a = {
+        //     "orientation": "NE",
+        //     "optionsGPSHighAccuracy": true,
+        //     "optionsCompassEnabled": false,
+        //     "trueHeading": 70,
+        //     "optionsCompassFrequency": 800,
+        //     "speed": 0,
+        //     "id": 2,
+        //     "optionsGPSMaxAge": "300",
+        //     "geom": {
+        //         "type": "Point",
+        //         "coordinates": [-45.8607037738393, -23.2075978769206]
+        //     },
+        //     "compassManual": false,
+        //     "latitude": -23.2075978769206,
+        //     "altitudeAccuracy": 12,
+        //     "accuracy": 20.7676842649637,
+        //     "filePath": "/home/felipecorrea/Dropbox/ForestWatchers/web/pyserver/api/static/uploads/3FF01F0CADE307D1CE459DE5FFFFFFFF_CameraCapture-bd7b2294-5dd8-4e43-b555-c754e3125871.jpg",
+        //     "fileName": "3FF01F0CADE307D1CE459DE5FFFFFFFF_CameraCapture-bd7b2294-5dd8-4e43-b555-c754e3125871.jpg",
+        //     "magneticHeading": 248,
+        //     "optionsPictureQuality": 75,
+        //     "created": "2013-08-03T18:35:09.506117",
+        //     "longitude": -45.8607037738393,
+        //     "deviceid": "3FF01F0CADE307D1CE459DE5FFFFFFFF",
+        //     "optionsGPSTimeout": "5000",
+        //     "heading": 55.546875
+        // }
+    }
+
+    var layersEvents = {
+        'featureselected': function(selection) {
+            isActive = $('.frame li.active').length > 0;
+
+            if (!isActive) {
+                featureid = selection.feature.id;
+                elem = $('[data-feature-id="' + featureid + '"]');
+
+                sly.activate(elem, false);
+            }
+
+        },
+        'featureunselected': function(selection) {
+
+            sel = $('.frame li.active');
+            isActive = sel.length > 0;
+            if (isActive) {
+                featureid = selection.feature.id;
+                elem = $('[data-feature-id="' + featureid + '"]');
+                // sly.activate(elem);
+                $(elem).popover('destroy');
+
+                sel.removeClass('active');
+            }
+
+
+
+        }
+    };
+
+    $(document).ready(function() {
+
+
+
+        xively.setKey("NyUjrQyi34JQ4HMhavbk7YmG5tv6XVNLqxs98gTiT7bhyDbX");
+
+        $('#contributeData').on('show.bs.modal', function() {
+            $('#environmentalData .alert-success').hide();
+            $('#environmentalData .alert-danger').hide();
+        });
+
+
+
+
+
+        $('[data-submit-type=environmental]').find('button').on('click', function(evt) {
+
+            // $('#environmentalData .alert-success').hide(500)
+            // $('#environmentalData .alert-success').show(500)
+            // alert('clicked');
+            feedid = $('[data-submit-type=environmental]').find('input').val();
+            if (feedid) {
+
+                xively.feed.get(feedid, function(data) {
+                    // $('#chart_form .modal-title').text(data.title);
+                    title = data.title + '<p><small>last update: ' + data.updated + '</small></p><p>'
+                                        +'<a target="_blank" href="'+data.creator+'" role="button" class="btn btn-primary btn-xs">creator</a>'
+                                        +'<a target="_blank" href="https://xively.com/feeds/'+feedid+'" role="button" class="btn btn-default btn-xs">Source</a></p>'
+
+                    $('#chart_form .modal-title').html(title);
+                    console.log(data.title); // Logs the feed title  
+                    if (data.location && data.location.lat && data.location.lon) {
+
+                        pointGeometry = new OpenLayers.Geometry.Point(data.location.lon, data.location.lat);
+                        pointGeometry.transform(geographic, mercator);
+
+                        data.type = 'sensor';
+
+                        feature = new OpenLayers.Feature.Vector(pointGeometry, data);
+                        feature.fid = 'xively' + data.id;
+                        feature.type = 'sensor';
+
+                        AllLayers.sensors.addFeatures(feature);
+
+                        $('#environmentalData .alert-success').show(500);
+                        (new chartFactory()).loadXively(feedid);
+                    } else {
+                        $('#environmentalData .alert-danger').show(500);
+                    }
+                })
+            }
+        });
+
+        // $('#push').height() / $(window).height() = 0.7
+        $('#push').css('height', $(window).height() * 0.69);
+
+        $('#modal-window').on('shown.bs.modal', function() {
+
+            elem = $('.det.direction');
+            if (!elem.has('span')[0]) {
+                rotation = 'rotate(' + elem.data('direction') + 'deg)';
+
+                arrow = $('<span>')
+                //.text('&nbsp;')
+                // .html('&nbsp;')
+                .addClass('glyphicon')
+                    .addClass('glyphicon-arrow-up')
+                    .css('-webkit-transform', rotation)
+                    .css('-moz-transform', rotation)
+                    .css('-ms-transform', rotation)
+                    .css('transform', rotation)
+
+
+                elem.append($('<div>').append(arrow));
+            }
+
+            // $(".twentytwenty-container").twentytwenty({
+            //     default_offset_pct: 0.7
+            // });
+        });
+        //hide.bs.modal
+
+        $('#modal-window').on('hide.bs.modal', function() {
+            vd = $('#modal-window').find('video')
+            if (vd.length > 0) {
+                for (var i = 0; i < vd.length; i++) {
+                    vd[i].pause();
+                };
+            }
+            vd = $('#modal-window').find('audio')
+            if (vd.length > 0) {
+                for (var i = 0; i < vd.length; i++) {
+                    vd[i].pause();
+                };
+            }
+        });
+        // paper = Raphael(0,0, $(window).width(), $(window).height());
+
+        $('[data-layer]').parents('.dropdown li').click(function(e) {
+            // var element = el.parents('.dropdown li');
+            var element = $(e.currentTarget);
+
+            var layers;
+            var layerName = element.find('[data-layer]').data('layer');
+
+
+            if (layerName == 'others') {
+                layers = [AllLayers.hydrography, AllLayers.conservation, AllLayers.indigenous];
+            } else if (layerName == 'track') {
+
+                if (!AllLayers.track) {
+                    var track = new OpenLayers.Layer.Vector("Tracking", {
+                        strategies: [new OpenLayers.Strategy.Fixed()],
+                        protocol: new OpenLayers.Protocol.HTTP({
+                            url: 'static/tracking/track.gpx',
+                            // format: new OpenLayers.Format.GPX({
+                            //     extractWaypoints: true,
+                            //     extractTracks: false,
+                            //     extractRoutes: false
+                            // })
+                            format: new OpenLayers.Format.GPX()
+
+                        }),
+                        styleMap: new OpenLayers.StyleMap({
+                            'default': OpenLayers.Util.applyDefaults({
+                                strokeColor: "yellow",
+                                strokeWidth: 5,
+                                strokeOpacity: 0.5
+                            }, OpenLayers.Feature.Vector.style["default"]),
+                            'select': OpenLayers.Util.applyDefaults({
+                                strokeColor: "orange",
+                                strokeWidth: 10,
+                                strokeOpacity: 0.8
+                            }, OpenLayers.Feature.Vector.style["default"])
+                        }),
+                        // style: {
+                        //     strokeColor: "yellow",
+                        //     strokeWidth: 10,
+                        //     strokeOpacity: 0.5
+                        // },
+                        projection: new OpenLayers.Projection("EPSG:4326")
+                    });
+
+                    map.addLayer(track);
+                    track.events.on({
+                        'featureselected': function(selection) {
+                            // alert('selected');
+                            var a = 0;
+                        },
+                        'featureunselected': function(selection) {
+                            // alert('unselected');
+                            var a = 0;
+                        }
+                    });
+
+
+                    var selectGPX = new OpenLayers.Control.SelectFeature(track, {
+                        multiple: false,
+                        hover: false
+                    });
+                    map.addControl(selectGPX);
+
+                    selectGPX.activate();
+
+                    AllLayers['track'] = track;
+                }
+                layers = [AllLayers[layerName]];
+            } else {
+                layers = [AllLayers[layerName]];
+            }
+
+            changeLayerVisibility(layers, element);
+            e.preventDefault();
+        });
+
+        $('#navbar-show').click(function(e) {
+            $('.navbar').toggle();
+        });
+
+        map = new OpenLayers.Map({
+
+            projection: mercator,
+            div: "map",
+            allOverlays: true,
+            layers: [AllLayers.osm],
+            controls: [
+                new OpenLayers.Control.Navigation({
+                    dragPanOptions: {
+                        enableKinetic: true
+                    }
+                }),
+            ],
+            center: [0, 0],
+            zoom: 2
+        });
+
+
+
+        for (layer in AllLayers) {
+            if (layer != 'osm')
+                map.addLayer(AllLayers[layer]);
+        }
+
+        map.events.register("moveend", map, function(evt) {
+            getVisibleFeatures([AllLayers.photos, AllLayers.videos, /* AllLayers.audios , AllLayers.sensors*/]);
+        });
+
+        // map.events.register("zoomend", map, function(evt) {
+        //     // getVisibleFeatures([/*AllLayers.photos,*/ AllLayers.videos]);
+        //     getVisibleFeatures([AllLayers.photos, AllLayers.videos, /* AllLayers.audios */, AllLayers.sensors]);
+        // });
+
+        selector['sensors'] = new OpenLayers.Control.SelectFeature(AllLayers.sensors, {
+            multiple: false,
+            hover: false,
+            toggle: true,
+        });
+        selector['audios'] = new OpenLayers.Control.SelectFeature(AllLayers.audios, {
+            multiple: false,
+            hover: false,
+            toggle: true,
+        });
+        selector['videos'] = new OpenLayers.Control.SelectFeature(AllLayers.videos, {
+            multiple: false,
+            hover: false,
+            toggle: true,
+        });
+        selector['photos'] = new OpenLayers.Control.SelectFeature(AllLayers.photos, {
+            multiple: false,
+            hover: false,
+            toggle: true,
+        });
+
+        map.addControl(selector['sensors']);
+        map.addControl(selector['photos']);
+        map.addControl(selector['audios']);
+        map.addControl(selector['videos']);
+
+        AllLayers.sensors.events.on(layersEvents);
+        AllLayers.photos.events.on(layersEvents);
+        AllLayers.audios.events.on(layersEvents);
+        AllLayers.videos.events.on(layersEvents);
+
+        selector['sensors'].activate();
+        selector['audios'].activate();
+        selector['photos'].activate();
+        selector['videos'].activate();
+        
+        
+
+        var options = { //$frame.sly(
+            horizontal: 1,
+            itemNav: 'centered',
+            keyboardNavBy: 'items',
+
+            smart: 1,
+            activateOn: 'click',
+            mouseDragging: 1,
+            touchDragging: 1,
+            // releaseSwing: 1,
+            startAt: 0,
+            // scrollBar: $wrap.find('.scrollbar'),
+            scrollBy: 1,
+
+            // pagesBar: $wrap.find('.pages'),
+            activatePageOn: 'click',
+            speed: 100,
+            // elasticBounds: 1,
+            // easing: 'linear',
+            easing: 'swing',
+            // moveBy: 10,
+            moveBy: 300,
+            dragHandle: 1,
+            // dynamicHandle: 1,
+            clickBar: 1,
+            nextPage: $('#forward'),
+            prevPage: $('#backward'),
+        };
+
+        sly = new Sly('#footer', options);
+        sly.init();
+
+        sly_events = new slyEvents(sly);
+
+        var adjust_icons = $('[data-icon-layer]');
+        if(adjust_icons){
+            adjust_icons.each(function(idx, data ){
+                el = $(data);
+                target = el.data('icon-layer');
+                path = icons[target];
+                img = '<img src=' + path + '/>';
+                // $(data).append(img);
+                $(img).insertBefore(el);
+            })
+        }
+
+    });
+
+    </script>
+
+</body>
+
+</html>
