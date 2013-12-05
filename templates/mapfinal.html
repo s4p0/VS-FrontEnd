@@ -255,15 +255,15 @@
                                         <li><a href="#" data-layer="modis">MODIS (250m)&nbsp;</a></li>
                                         <li><a href="#" data-layer="fine">SPOT (2.5m)&nbsp;</a></li>
                                         <li class="divider"></li>
-                                            <li><a href="#" data-layer="audios"><span data-icon-layer="audio"></span>&nbsp;Audios&nbsp;<span class="glyphicon glyphicon-ok"></span></a></li>
-                                            <li><a href="#" data-layer="sensors"><span data-icon-layer="stat"></span>&nbsp;Data&nbsp;<span class="glyphicon"></a>
-                                            <li><a href="#" data-layer="photos"><span data-icon-layer="picture"></span>&nbsp;Pictures&nbsp;<span class="glyphicon glyphicon-ok"></span></a></li>
-                                            <li><a href="#" data-layer="videos"><span data-icon-layer="video"></span>&nbsp;Videos&nbsp;<span class="glyphicon glyphicon-ok"></span></a></li>
-                                            <li><a href="#" data-layer="track">Tracking</a></li>
+                                            <li><a href="#" data-layer="audios"><span data-icon-layer="audio"></span>&nbsp;Audios&nbsp;<span class="badge">42</span>&nbsp;<span class="glyphicon glyphicon-ok"></span></a></li>
+                                            <li><a href="#" data-layer="sensors"><span data-icon-layer="stat"></span>&nbsp;Data&nbsp;<span class="badge">42</span>&nbsp;<span class="glyphicon"></a>
+                                            <li><a href="#" data-layer="photos"><span data-icon-layer="picture"></span>&nbsp;Pictures&nbsp;<span class="badge">42</span>&nbsp;<span class="glyphicon glyphicon-ok"></span></a></li>
+                                            <li><a href="#" data-layer="videos"><span data-icon-layer="video"></span>&nbsp;Videos&nbsp;<span class="badge">42</span>&nbsp;<span class="glyphicon glyphicon-ok"></span></a></li>
+                                            <li><a href="#" data-layer="track">Tracking&nbsp;<span class="glyphicon"></span></a></li>
                                         </li>
-                                        <li><a href="#" data-layer="classification">ANN Classification</a></li>
-                                        <li><a href="#" data-layer="probability">ANN Probability</a></li>
-                                        <li><a href="#" data-layer="others">Others</a></li>
+                                        <li><a href="#" data-layer="classification">ANN Classification&nbsp;<span class="glyphicon"></span></a></li>
+                                        <li><a href="#" data-layer="probability">ANN Probability&nbsp;<span class="glyphicon"></span></a></li>
+                                        <li><a href="#" data-layer="others">Others&nbsp;<span class="glyphicon"></span></a></li>
                                     </ul>
                                 </li>
                             </ul>
@@ -897,11 +897,23 @@
         //   </tbody>
         // </table>
     }
+    var setBadgeCounter = function(layerName, count){
+        badge = $('[data-layer='+layerName+']').find('.badge');
+        badge.text(count);
+
+        if( count > 0){
+            badge.show();
+        }else{
+            badge.hide();
+        }
+    }
     var getVisibleFeatures = function(layers) {
         $.each(layers, function(index, layer) {
             extent = map.getExtent();
             feats = layer.features;
             visibles = [];
+
+            setBadgeCounter(layer.name, feats.length);
 
             $('[data-feature-layer=' + layer.name + ']').addClass('featRemove');
 
@@ -1006,7 +1018,31 @@
             sly.reload();
             sly_events.bindAll();
 
-            // $(".fancybox").fancybox();
+
+
+            // // $(".fancybox").fancybox();
+            // $('.fbmanual').fancybox({
+            //     afterLoad: function(){
+                   
+            //     },
+            //     beforeShow: function(){
+            //         el = $(this.element);
+            //         type = el.data('type');
+            //         var tag;
+
+            //         if (type == 'movie'){
+            //             data = el.data('href');
+            //             tag = '<video controls>'
+            //             +'<source src="'+data+'.webm" type="video/webm">'
+            //             +'<source src="'+data+'.ogg" type="video/ogg">'
+            //             +'Your browser does not support the video element.'
+            //             +'</video>';
+            //         }
+            //         if(tag)
+            //             this.content = tag;
+            //     }
+            // });
+
             $(".fancybox").fancybox({
                 afterLoad: function() {
                     this.title = '<a href="' + this.href + '">Download</a> ' + this.title;
@@ -1014,6 +1050,20 @@
                 helpers: {
                     title: {
                         type: 'inside'
+                    }
+                },
+                beforeLoad: function(){
+                    el = this.element;
+                    type = $(el).data('type');
+                    if(type == 'audio'){
+                        // this.content = 'viiideo';
+                    }
+                },
+                beforeShow: function(){
+                    el = this.element;
+                    type = $(el).data('type');
+                    if(type == 'audio'){
+
                     }
                 }
             });
@@ -1557,17 +1607,32 @@
         */
 
         var dict = {};
+
+        if (type == 'picture') {
+            image = attributes[type].fileName;
+            image_link = '<a class="btn btn-default btn-xs fancybox" data-type="picture" href="' + upload_path + '/thumb_75/' + image + '">75&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-warning btn-xs fancybox"  target="_blank" href="' + upload_path + '/thumb_120/' + image + '">120&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-info btn-xs fancybox" target="_blank" href="' + upload_path + '/thumb_400/' + image + '">400&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-primary btn-xs fancybox" target="_blank" href="' + upload_path + '/' + image + '">Original&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>';
+            dict["Image"] = image_link;
+        } else if (type == 'video') {
+            // movie = attributes[type].fileName;
+            movie = 'http://' + location.host +'/video/'+ attributes[type].fileName;
+            movie = movie.replace('.mp4','');
+            //http://localhost:8081/video/WP_20130808_191937Z.mp4
+            var movie_link = '<a class="btn btn-default btn-xs btnmedia" data-type="movie" href="javascript:;" data-href="' + movie + '" >video&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>';
+            dict["Video"] = movie_link;
+        }else if (type == 'audio'){
+            //http://localhost:8081/video/WP_20130808_191937Z.audio.ogg
+            audio = 'http://' + location.host +'/audio/'+ attributes[type].fileName;
+            audio = audio.replace('.mp4','');
+            //http://localhost:8081/video/WP_20130808_191937Z.mp4
+            // var audio_link = '<a class="btn btn-default btn-xs fancybox-manual" data-type="audio" target="_blank" href="#" data-href="' + audio + '" >audio&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>';
+            var audio_link = '<a type="button" class="btn btn-info btnmedia"  href="javascript:;">button</a>'
+            dict["Audio"] = audio_link;
+        }
+
         dict["Direction"] = "<div class='pop direction' data-direction='" + attributes[type].magneticHeading + "'><div  style='float:left;'>" + getCardinal(attributes[type].magneticHeading) + "&nbsp;&nbsp;</div></div>";
         dict["Lat"] = "<p class='pop latitude'>" + parseFloat(attributes[type].latitude).toFixed(5) + "</p>";
         dict["Lon"] = "<p class='pop longitude'>" + parseFloat(attributes[type].longitude).toFixed(5) + "</p>";
 
-        if (type == 'picture') {
-            image = attributes[type].fileName;
-            image_link = '<a class="btn btn-default btn-xs fancybox" href="' + upload_path + '/thumb_75/' + image + '">75&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-warning btn-xs fancybox"  target="_blank" href="' + upload_path + '/thumb_120/' + image + '">120&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-info btn-xs fancybox" target="_blank" href="' + upload_path + '/thumb_400/' + image + '">400&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>' + '<a class="btn btn-primary btn-xs fancybox" target="_blank" href="' + upload_path + '/' + image + '">Original&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>';
-            dict["Image"] = image_link;
-        } else if (type == 'video') {
-
-        }
 
         dict["Date/Time"] = "<p class='pop created'>" + attributes[type].created + "</p>";
 
@@ -1786,7 +1851,7 @@
             }
         });
         // paper = Raphael(0,0, $(window).width(), $(window).height());
-
+        
         $('[data-layer]').parents('.dropdown li').click(function(e) {
             // var element = el.parents('.dropdown li');
             var element = $(e.currentTarget);
@@ -1892,14 +1957,36 @@
                 map.addLayer(AllLayers[layer]);
         }
 
-        map.events.register("moveend", map, function(evt) {
-            getVisibleFeatures([AllLayers.photos, AllLayers.videos, /* AllLayers.audios , AllLayers.sensors*/]);
+        map.events.register("changelayer", map, function(evt) {
+            var a = 0;
+            var values = $('[data-feature-layer='+evt.layer.name+']');
+            if(values){
+                
+                
+                if(evt.layer.visibility){
+                    evt.layer.refresh();
+                }
+                else{
+                    sly_events.unbindAll();
+                    values.remove();
+                    setBadgeCounter(evt.layer.name, 0);
+                    sly.reload();
+                    sly_events.bindAll();
+                }
+
+                
+            }
+            // $('[data-feature-layer=audios]').hide()
         });
 
-        // map.events.register("zoomend", map, function(evt) {
-        //     // getVisibleFeatures([/*AllLayers.photos,*/ AllLayers.videos]);
-        //     getVisibleFeatures([AllLayers.photos, AllLayers.videos, /* AllLayers.audios */, AllLayers.sensors]);
-        // });
+        map.events.register("moveend", map, function(evt) {
+            getVisibleFeatures([AllLayers.photos, AllLayers.videos, AllLayers.audios, AllLayers.sensors]);
+        });
+
+        map.events.register("zoomend", map, function(evt) {
+            // getVisibleFeatures([/*AllLayers.photos,*/ AllLayers.videos]);
+            getVisibleFeatures([AllLayers.photos, AllLayers.videos, AllLayers.audios, AllLayers.sensors]);
+        });
 
         selector['sensors'] = new OpenLayers.Control.SelectFeature(AllLayers.sensors, {
             multiple: false,
@@ -1984,6 +2071,60 @@
                 $(img).insertBefore(el);
             })
         }
+
+        $('[data-layer]').parents('.dropdown li').each(function(index, li){
+            var layerName = $(li).find('[data-layer]').data('layer');
+            var value = 0;
+            if(AllLayers[layerName] && AllLayers[layerName].feature)
+                value = AllLayers[layerName].feature.length;
+            setBadgeCounter(layerName, value);
+        })  ;      
+
+        $(document).on('click', '.btnmedia', function(evt){
+            var  tag, type, data, el = $(evt.toElement);
+            type = el.data('type');
+            data = el.data('href');
+            
+            if(type == 'movie'){
+                tag = '<video controls preload="metadata" style="height: 480px; width: width: 320px;">'
+                    +'<source src="'+data+'.webm" type="video/webm">'
+                    +'<source src="'+data+'.ogg" type="video/ogg">'
+                    +'Your browser does not support the video element.'
+                    +'</video>';
+            }
+
+            if(tag){
+                $.fancybox.open({
+                    content: tag,
+                        // aspectRatio : true,
+                        // scrolling   : 'auto',
+                        // height: 400,
+                        // width: 300,
+                    type: 'iframe',
+                    showEarly: false,
+                    // aspectRatio: true,
+                    helpers: {
+                        media: true,
+                        showEarly: false,
+                    },
+                    // openEffect: 'none',
+                    // closeEffect: 'none',
+
+                    // iframe: {
+                    //     scrolling : 'no',
+                    //     preload   : true
+                    // }
+                },{
+                    padding:0,
+                    iframe: {
+                        scrolling : 'no',
+                        preload   : true
+                    }
+                });
+            }
+
+        });
+        
 
     });
 
