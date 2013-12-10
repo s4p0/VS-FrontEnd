@@ -673,17 +673,19 @@
                 url3 = getTileCentered(feature, AllLayers.classification, map.getResolutionForZoom(12));
 
                 modal_content = '';
-                path = 'http://' + location.host + '/video/';
+                path_video = 'http://' + location.host + '/video/';
+                path_audio = 'http://' + location.host + '/audio/';
                 if (layer == 'videos') { //location.hostname
-                    modal_content += '<video controls preload="metadata" poster="' + path + feature.attributes.video.fileName.replace('.mp4', '.png') + '" style="width: 100%;">'
+                    modal_content += '<video controls preload="metadata" poster="' + path_video + feature.attributes.video.fileName.replace('.mp4', '.png') + '" style="width: 100%;">'
                     // + '<source src="http://localhost/video/' 
-                    + '<source src="' + path + feature.attributes.video.fileName.replace('.mp4', '.webm') + '" type="video/webm" />' + '<source src="' + path + feature.attributes.video.fileName.replace('.mp4', '.ogg') + '" type="video/ogg" />' + '<source src="' + path + feature.attributes.video.fileName + '" type="video/mp4" />' + '</video>';
+                    + '<source src="' + path_video + feature.attributes.video.fileName.replace('.mp4', '.webm') + '" type="video/webm" />' + '<source src="' + path + feature.attributes.video.fileName.replace('.mp4', '.ogg') + '" type="video/ogg" />' + '<source src="' + path + feature.attributes.video.fileName + '" type="video/mp4" />' + '</video>';
                 } else if (layer == 'photos') {
                     modal_content += '<img style="width:100%;" src="' + upload_path + '/thumb_400/' + feature.attributes.picture.fileName + '"></img>'
                 } else if (layer == 'audios') {
-                    modal_content += '<audio controls>'
-                    // + '<source src="' + path + feature.attributes.audio.fileName.replace('.mp4', '.audio.mp3') + '" type="audio/mpeg" />' 
-                    + '<source src="' + path + feature.attributes.audio.fileName.replace('.mp4', '.audio.ogg') + '" type="audio/ogg" />' + '</audio>'
+                    modal_content += '<audio controls preload="metadata">'
+                                  + '<source src="' + path_audio + feature.attributes.audio.fileName.replace('.mp4', '-audio.mp3') + '" type="audio/mpeg" />' 
+                                  + '<source src="' + path_audio + feature.attributes.audio.fileName.replace('.mp4', '-audio.ogg') + '" type="audio/ogg" />' 
+                                  + '</audio>'
                 }
 
                 modal_content += table2;
@@ -1625,7 +1627,7 @@
             audio = audio.replace('.mp4','');
             //http://localhost:8081/video/WP_20130808_191937Z.mp4
             // var audio_link = '<a class="btn btn-default btn-xs fancybox-manual" data-type="audio" target="_blank" href="#" data-href="' + audio + '" >audio&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>';
-            var audio_link = '<a type="button" class="btn btn-info btnmedia"  href="javascript:;">button</a>'
+            var audio_link = '<a class="btn btn-default btn-xs btnmedia" data-type="sound"  href="javascript:;" data-href="' + audio + '" >audio&nbsp;<span class="glyphicon glyphicon-new-window"></span></a>'
             dict["Audio"] = audio_link;
         }
 
@@ -2086,20 +2088,27 @@
             data = el.data('href');
             
             if(type == 'movie'){
-                tag = '<video controls preload="metadata" style="height: 480px; width: width: 320px;">'
+                tag = '<video controls preload="metadata" style="height: 320px; width: 480px;">'
                     +'<source src="'+data+'.webm" type="video/webm">'
                     +'<source src="'+data+'.ogg" type="video/ogg">'
                     +'Your browser does not support the video element.'
                     +'</video>';
+
+            }else if(type == 'sound'){
+                tag = '<audio controls preload="metadata">'
+                    +'<source src="'+data+'-audio.ogg" type="audio/ogg">'
+                    +'<source src="'+data+'-audio.mp3" type="audio/mpeg">'
+                    +'Your browser does not support the audio element.'
+                    +'</audio>';
             }
 
             if(tag){
                 $.fancybox.open({
                     content: tag,
                         // aspectRatio : true,
-                        // scrolling   : 'auto',
+                        scrolling   : 'auto',
                         // height: 400,
-                        // width: 300,
+                        width: 400,
                     type: 'iframe',
                     showEarly: false,
                     // aspectRatio: true,
